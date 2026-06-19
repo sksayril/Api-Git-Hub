@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Outfit", system-ui, sans-serif;
+  
+  /* ── Brand Palette ── */
+  --color-brand-primary: #8b5cf6;
+  --color-brand-primary-dark: #6d28d9;
+  --color-brand-accent: #a78bfa;
+  --color-brand-accent-light: #ddd6fe;
+
+  /* ── Surface Palette ── */
+  --color-bg-dark: #0e1117;
+  --color-surface-1: #141720;
+  --color-surface-2: #1a1d2e;
+  --color-surface-3: #1f2235;
+
+  /* ── Glass ── */
+  --color-glass: rgba(20, 23, 32, 0.7);
+  --color-glass-hover: rgba(26, 29, 46, 0.85);
+  --color-glass-border: rgba(255, 255, 255, 0.06);
+  --color-glass-border-hover: rgba(139, 92, 246, 0.28);
+
+  /* ── Status Colors ── */
+  --color-status-completed: #10b981;
+  --color-status-pending: #f59e0b;
+  --color-status-cancelled: #ef4444;
+
+  /* ── Animation ── */
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-spin-slow: spin 20s linear infinite;
+}
+
+:root {
+  --background: #0e1117;
+  --foreground: #e8eaf0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(109, 40, 217, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 90% 20%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 60% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* ── Glassmorphism ── */
+.glass-panel {
+  background: var(--color-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-panel-hover:hover {
+  background: var(--color-glass-hover);
+  border-color: var(--color-glass-border-hover);
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.08);
+}
+
+/* ── Accordion ── */
+details summary::-webkit-details-marker {
+  display: none;
+}
+details[open] summary svg {
+  transform: rotate(180deg);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0e1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2d45;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f4268;
+}
