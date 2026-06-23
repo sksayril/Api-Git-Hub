@@ -660,13 +660,13 @@ export default function DashboardPage() {
               © 2024 Lumina Digital Marketplace. All rights reserved.
             </p>
             <div className="flex items-center gap-5 text-xs text-zinc-600">
-              <Link href="#" className="hover:text-zinc-400 transition-colors">
+              <Link href="/privacy-policy" className="hover:text-zinc-400 transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="hover:text-zinc-400 transition-colors">
+              <Link href="/legal" className="hover:text-zinc-400 transition-colors">
                 Terms of Service
               </Link>
-              <Link href="#" className="hover:text-zinc-400 transition-colors">
+              <Link href="/help-center" className="hover:text-zinc-400 transition-colors">
                 Help Center
               </Link>
             </div>

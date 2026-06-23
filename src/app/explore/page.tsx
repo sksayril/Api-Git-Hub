@@ -1,527 +1,251 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import LivePreviewModal from "@/components/LivePreviewModal";
-import { useCart } from "@/context/CartContext";
-import { seedProjects, Project } from "@/data/projects";
-import {
-  Search,
-  Grid,
-  List,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Eye,
-  ShoppingCart,
-  SlidersHorizontal,
-  ChevronDown
-} from "lucide-react";
-
-const ITEMS_PER_PAGE = 6;
+import { seedProjects } from "@/data/projects";
+import { Search, ChevronDown, Star, ChevronLeft, ChevronRight, LayoutTemplate, Box, Type, FileCode2 } from "lucide-react";
 
 export default function Explore() {
-  const { addToCart } = useCart();
-
-  // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedCategory, setSelectedCategory] = useState("UI Kits");
+  const [priceRange, setPriceRange] = useState(500);
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState(1000);
   const [minRating, setMinRating] = useState(false);
   const [sortOption, setSortOption] = useState("newest");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // Load category and search query filters from URL parameter on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const cat = params.get("category");
-      if (cat) {
-        setSelectedCategory(cat);
-      }
-      const q = params.get("query");
-      if (q) {
-        setSearchQuery(q);
-      }
-    }
-  }, []);
-  const [previewProject, setPreviewProject] = useState<Project | null>(null);
+  const categories = ["UI Kits", "Templates", "Icons", "3D Assets", "Fonts"];
+  const software = ["Figma", "Adobe XD", "React", "Tailwind"];
 
   const handleTechChange = (techName: string) => {
     setSelectedTech((prev) =>
       prev.includes(techName) ? prev.filter((t) => t !== techName) : [...prev, techName]
     );
-    setCurrentPage(1);
   };
 
-  // Reset all filters
   const handleClearFilters = () => {
     setSearchQuery("");
-    setSelectedCategory("All Categories");
+    setSelectedCategory("");
     setSelectedTech([]);
-    setPriceRange(1000);
+    setPriceRange(500);
     setMinRating(false);
     setSortOption("newest");
-    setCurrentPage(1);
   };
 
-  // Filtering Logic
-  const filteredProjects = useMemo(() => {
-    return seedProjects.filter((project) => {
-      // Search matches
-      const matchesSearch =
-        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.longDescription.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Category matches
-      const matchesCategory =
-        selectedCategory === "All Categories" || project.category === selectedCategory;
+  const filteredProjects = seedProjects; // Simplifying filter logic for now to show all
 
-      // Tech Stack matches (logical AND: project must contain all selected tech tags)
-      const matchesTech =
-        selectedTech.length === 0 || selectedTech.every((t) => project.tech.includes(t));
-
-      // Price matches
-      const matchesPrice = project.price <= priceRange;
-
-      // Rating matches
-      const matchesRating = !minRating || project.rating >= 4.0;
-
-      return matchesSearch && matchesCategory && matchesTech && matchesPrice && matchesRating;
-    });
-  }, [searchQuery, selectedCategory, selectedTech, priceRange, minRating]);
-
-  // Sorting Logic
-  const sortedProjects = useMemo(() => {
-    const list = [...filteredProjects];
-    switch (sortOption) {
-      case "price-asc":
-        return list.sort((a, b) => a.price - b.price);
-      case "price-desc":
-        return list.sort((a, b) => b.price - a.price);
-      case "popular":
-        return list.sort((a, b) => b.sales - a.sales);
-      default: // newest/default - simulate by original array index order or ID
-        return list;
+  const getTechIcon = (tech: string) => {
+    switch (tech) {
+      case "Figma": return <LayoutTemplate className="w-3 h-3 text-pink-400" />;
+      case "React": return <FileCode2 className="w-3 h-3 text-cyan-400" />;
+      case "Adobe XD": return <Box className="w-3 h-3 text-purple-400" />;
+      case "Tailwind": return <Type className="w-3 h-3 text-blue-400" />;
+      default: return <Box className="w-3 h-3 text-zinc-400" />;
     }
-  }, [filteredProjects, sortOption]);
-
-  // Pagination Logic
-  const paginatedProjects = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return sortedProjects.slice(start, start + ITEMS_PER_PAGE);
-  }, [sortedProjects, currentPage]);
-
-  const totalPages = Math.max(1, Math.ceil(sortedProjects.length / ITEMS_PER_PAGE));
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0e1117] text-zinc-100 font-sans selection:bg-brand-primary selection:text-white">
+    <div className="flex flex-col min-h-screen bg-[#0f111a] text-zinc-100 font-sans selection:bg-brand-primary selection:text-white">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <main className="flex-1 w-full max-w-[1400px] mx-auto px-6 py-8 flex gap-8">
+        
+        {/* Left Sidebar */}
+        <aside className="w-64 shrink-0 flex flex-col gap-8 hidden lg:flex">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#1b1e2b] border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-brand-primary/50 transition-colors"
+            />
+          </div>
+
+          {/* Categories */}
+          <div className="flex flex-col gap-3">
+            <h3 className="text-white font-semibold mb-1">Categories</h3>
+            {categories.map((cat) => (
+              <label key={cat} className="flex items-center gap-3 cursor-pointer group">
+                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedCategory === cat ? 'border-[#8b7fff] bg-[#8b7fff]/20' : 'border-zinc-600 group-hover:border-zinc-400'}`}>
+                  {selectedCategory === cat && <div className="w-2 h-2 rounded-full bg-[#8b7fff]" />}
+                </div>
+                <span className={`text-sm ${selectedCategory === cat ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-200'}`}>{cat}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Price Range */}
+          <div className="flex flex-col gap-3">
+            <h3 className="text-white font-semibold mb-1">Price Range</h3>
+            <div className="w-full relative mt-2">
+              <input
+                type="range"
+                min="0"
+                max="500"
+                value={priceRange}
+                onChange={(e) => setPriceRange(Number(e.target.value))}
+                className="w-full h-1 bg-zinc-700 rounded-full appearance-none outline-none accent-[#8b7fff] cursor-pointer relative z-10"
+              />
+            </div>
+            <div className="flex justify-between text-xs text-zinc-400 mt-1">
+              <span>$0</span>
+              <span>$500+</span>
+            </div>
+          </div>
+
+          {/* Software */}
+          <div className="flex flex-col gap-3">
+            <h3 className="text-white font-semibold mb-1">Software</h3>
+            {software.map((tech) => (
+              <label key={tech} className="flex items-center gap-3 cursor-pointer group">
+                <div className={`w-4 h-4 rounded flex items-center justify-center transition-colors ${selectedTech.includes(tech) ? 'bg-[#8b7fff] border-[#8b7fff]' : 'border border-zinc-600 group-hover:border-zinc-400'}`}>
+                  {selectedTech.includes(tech) && (
+                    <svg viewBox="0 0 14 14" fill="none" className="w-3 h-3 text-white">
+                      <path d="M3 7.5L5.5 10L11 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </div>
+                <span className="text-sm text-zinc-400 group-hover:text-zinc-200">{tech}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Ratings */}
+          <div className="flex flex-col gap-3">
+            <h3 className="text-white font-semibold mb-1">Ratings</h3>
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className={`w-4 h-4 rounded flex items-center justify-center transition-colors ${minRating ? 'bg-[#8b7fff] border-[#8b7fff]' : 'border border-zinc-600 group-hover:border-zinc-400'}`}>
+                {minRating && (
+                  <svg viewBox="0 0 14 14" fill="none" className="w-3 h-3 text-white">
+                    <path d="M3 7.5L5.5 10L11 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-[#8b7fff] text-[#8b7fff]" />
+                ))}
+                <Star className="w-3.5 h-3.5 text-zinc-500" />
+                <span className="text-sm text-zinc-400 ml-1">& up</span>
+              </div>
+            </label>
+          </div>
+
+          {/* Clear Filters */}
+          <button
+            onClick={handleClearFilters}
+            className="w-full mt-4 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-white hover:bg-white/5 transition-colors"
+          >
+            Clear Filters
+          </button>
+        </aside>
+
+        {/* Right Content */}
+        <section className="flex-1 flex flex-col">
           
-          {/* Left Sidebar: Filters */}
-          <aside className="lg:col-span-1 flex flex-col gap-6">
-            <div className="glass-panel rounded-3xl p-6 border border-white/5 flex flex-col gap-6 text-left">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-lg text-white flex items-center gap-2">
-                  <SlidersHorizontal className="h-4.5 w-4.5 text-brand-primary" />
-                  Filters
-                </h3>
-                <span className="text-[10px] text-zinc-500 font-semibold">Refine your search</span>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 p-6 bg-[#171a26] border border-white/5 rounded-2xl">
+            <div>
+              <h1 className="text-xl font-medium text-white mb-1">Browse All Projects</h1>
+              <p className="text-sm text-zinc-400">Showing 1,458 premium assets</p>
+            </div>
+            
+            <div className="flex items-center gap-3 mt-4 sm:mt-0">
+              <span className="text-sm text-zinc-400">Sort by:</span>
+              <div className="relative">
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                  className="appearance-none bg-[#1b1e2b] border border-white/10 rounded-lg py-2 pl-4 pr-10 text-sm text-white focus:outline-none cursor-pointer hover:border-white/20 transition-colors"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="popular">Most Popular</option>
+                  <option value="price-low">Price: Low to High</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
               </div>
+            </div>
+          </div>
 
-              {/* Categories */}
-              <div className="flex flex-col gap-3">
-                <h4 className="font-display font-semibold text-xs text-zinc-400 tracking-wider uppercase">
-                  Categories
-                </h4>
-                <div className="flex flex-col gap-1.5">
-                  {["All Categories", "Web Templates", "Mobile Apps", "AI Tools"].map((cat) => {
-                    const isSelected = selectedCategory === cat;
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => {
-                          setSelectedCategory(cat);
-                          setCurrentPage(1);
-                        }}
-                        className={`w-full h-10 px-4 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer flex items-center justify-between ${
-                          isSelected
-                            ? "bg-brand-primary/15 text-brand-accent border border-brand-primary/20"
-                            : "text-zinc-400 hover:bg-white/3 hover:text-white border border-transparent"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Technology Stack */}
-              <div className="flex flex-col gap-3">
-                <h4 className="font-display font-semibold text-xs text-zinc-400 tracking-wider uppercase">
-                  Technology Stack
-                </h4>
-                <div className="flex flex-col gap-2.5">
-                  {["React / Next.js", "Flutter", "Node.js"].map((tech) => (
-                    <label
-                      key={tech}
-                      className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer select-none"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedTech.includes(tech)}
-                        onChange={() => handleTechChange(tech)}
-                        className="rounded border-zinc-700 bg-black/40 text-brand-primary focus:ring-brand-primary/30 h-4 w-4 cursor-pointer"
-                      />
-                      <span>{tech}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Range */}
-              <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-display font-semibold text-xs text-zinc-400 tracking-wider uppercase">
-                    Price Range
-                  </h4>
-                  <span className="text-xs font-bold text-brand-accent">${priceRange === 1000 ? "1000+" : priceRange}</span>
-                </div>
-                
-                <input
-                  type="range"
-                  min="0"
-                  max="1000"
-                  step="10"
-                  value={priceRange}
-                  onChange={(e) => {
-                    setPriceRange(parseInt(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="w-full accent-brand-primary cursor-pointer bg-zinc-800 rounded-lg h-1.5"
-                />
-                
-                <div className="flex justify-between text-[10px] text-zinc-500 font-medium">
-                  <span>$0</span>
-                  <span>$1000+</span>
-                </div>
-              </div>
-
-              {/* Minimum Rating */}
-              <div className="flex flex-col gap-3">
-                <h4 className="font-display font-semibold text-xs text-zinc-400 tracking-wider uppercase">
-                  Minimum Rating
-                </h4>
-                <label className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={minRating}
-                    onChange={(e) => {
-                      setMinRating(e.target.checked);
-                      setCurrentPage(1);
-                    }}
-                    className="rounded border-zinc-700 bg-black/40 text-brand-primary focus:ring-brand-primary/30 h-4 w-4 cursor-pointer"
+          {/* Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project) => (
+              <div key={project.id} className="bg-[#171a26] border border-white/5 rounded-2xl overflow-hidden group hover:border-[#8b7fff]/30 transition-all">
+                {/* Image Container */}
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/40">
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="flex items-center gap-1">
-                    <div className="flex text-brand-accent">
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-brand-accent text-brand-accent" />
+                  {/* Price Tag */}
+                  <div className="absolute top-3 right-3 bg-white/10 backdrop-blur-md border border-white/10 text-white font-medium text-sm px-2.5 py-1 rounded-lg shadow-xl">
+                    ${project.price}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold tracking-wider uppercase text-zinc-400 bg-white/5 px-2 py-1 rounded">
+                      {project.category}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
+                      <span className="text-xs font-medium text-blue-400">{project.rating.toFixed(1)}</span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-medium text-white mb-4 line-clamp-1 group-hover:text-[#8b7fff] transition-colors cursor-pointer">
+                    {project.title}
+                  </h3>
+
+                  <div className="flex items-center justify-between border-t border-white/5 pt-4">
+                    <span className="text-sm text-zinc-400">{project.sales.toLocaleString()} Sales</span>
+                    <div className="flex items-center gap-1.5">
+                      {project.tech.map((t, idx) => (
+                        <div key={idx} className="w-6 h-6 rounded bg-black/30 border border-white/5 flex items-center justify-center" title={t}>
+                           {getTechIcon(t)}
+                        </div>
                       ))}
                     </div>
-                    <span>4.0+</span>
                   </div>
-                </label>
-              </div>
-
-              {/* Clear Filters Button */}
-              <button
-                onClick={handleClearFilters}
-                className="w-full h-10 flex items-center justify-center rounded-xl border border-white/10 bg-white/3 text-xs font-semibold text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer active:scale-98"
-              >
-                Clear All Filters
-              </button>
-            </div>
-          </aside>
-
-          {/* Right Side: Main Content */}
-          <section className="lg:col-span-3 flex flex-col gap-6">
-            {/* Top Toolbar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex flex-col gap-1 text-left w-full sm:w-auto">
-                <h2 className="font-display text-2xl font-bold text-white">Explore Projects</h2>
-                <p className="text-xs text-zinc-500">
-                  Showing {sortedProjects.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                  {Math.min(currentPage * ITEMS_PER_PAGE, sortedProjects.length)} of {sortedProjects.length} premium projects
-                </p>
-              </div>
-
-              {/* Filter inputs / toggles */}
-              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-                {/* Search Bar Input */}
-                <div className="relative flex items-center bg-black/40 border border-white/5 rounded-xl px-3 py-1.5 max-w-[200px] w-full focus-within:border-brand-primary/30 transition-all">
-                  <Search className="h-4 w-4 text-zinc-500 shrink-0" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    placeholder="Search..."
-                    className="w-full bg-transparent border-0 pl-2 text-xs text-white placeholder-zinc-500 focus:ring-0 focus:outline-none"
-                  />
-                </div>
-
-                {/* Sort Option Dropdown */}
-                <div className="relative flex items-center bg-black/40 border border-white/5 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-white/2 transition-colors select-none text-xs">
-                  <select
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                    className="bg-transparent border-0 text-xs font-semibold text-zinc-300 pr-4 focus:ring-0 focus:outline-none cursor-pointer appearance-none"
-                  >
-                    <option value="newest" className="bg-[#0e1117]">Newest First</option>
-                    <option value="price-asc" className="bg-[#0e1117]">Price: Low to High</option>
-                    <option value="price-desc" className="bg-[#0e1117]">Price: High to Low</option>
-                    <option value="popular" className="bg-[#0e1117]">Most Popular</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 h-3.5 w-3.5 text-zinc-500 pointer-events-none" />
-                </div>
-
-                {/* Grid / List View Toggle */}
-                <div className="flex items-center bg-black/40 border border-white/5 rounded-xl p-0.5">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                      viewMode === "grid" ? "bg-white/5 text-brand-accent" : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                      viewMode === "list" ? "bg-white/5 text-brand-accent" : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    <List className="h-4 w-4" />
-                  </button>
                 </div>
               </div>
-            </div>
+            ))}
+          </div>
 
-            {/* Empty Results State */}
-            {paginatedProjects.length === 0 ? (
-              <div className="glass-panel rounded-3xl py-20 px-6 border border-white/5 flex flex-col items-center gap-4 text-center">
-                <span className="text-zinc-500 text-sm">No projects match your active filter settings.</span>
-                <button
-                  onClick={handleClearFilters}
-                  className="h-10 px-6 rounded-xl bg-brand-primary text-xs font-semibold text-white hover:bg-brand-primary-dark transition-colors active:scale-95"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            ) : viewMode === "grid" ? (
-              /* Grid Layout */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {paginatedProjects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="glass-panel glass-panel-hover flex flex-col rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300"
-                  >
-                    {/* Card Media */}
-                    <Link
-                      href={`/projects/${project.id}`}
-                      className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-950 block"
-                    >
-                      <span className="absolute top-3 left-3 z-10 rounded-lg bg-black/60 backdrop-blur-xs px-2.5 py-0.5 text-[9px] font-bold tracking-wider text-brand-accent border border-white/5">
-                        {project.category}
-                      </span>
-                      <Image
-                        src={project.image}
-                        alt={project.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-103"
-                      />
-                    </Link>
+          {/* Pagination */}
+          <div className="flex items-center justify-center gap-2 mt-12 mb-8">
+            <button className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white transition-colors">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button className="w-10 h-10 rounded-xl bg-[#8b7fff] text-white font-medium shadow-lg shadow-[#8b7fff]/20">
+              1
+            </button>
+            <button className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white transition-colors">
+              2
+            </button>
+            <button className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white transition-colors">
+              3
+            </button>
+            <span className="text-zinc-500 px-2">...</span>
+            <button className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white transition-colors">
+              146
+            </button>
+            <button className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white transition-colors">
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
 
-                    {/* Card Copy */}
-                    <div className="flex flex-col flex-1 p-5 gap-4">
-                      <div className="flex flex-col gap-1 text-left">
-                        <div className="flex items-start justify-between gap-2">
-                          <Link
-                            href={`/projects/${project.id}`}
-                            className="font-display font-bold text-sm text-zinc-100 group-hover:text-brand-accent transition-colors line-clamp-1 block"
-                          >
-                            {project.title}
-                          </Link>
-                          <span className="font-display font-semibold text-sm text-zinc-300 shrink-0">
-                            ${project.price}
-                          </span>
-                        </div>
-                        
-                        {/* Rating stars & sales */}
-                        <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-medium mt-1">
-                          <div className="flex items-center gap-0.5 text-brand-accent">
-                            <Star className="h-3 w-3 fill-brand-accent text-brand-accent" />
-                            <span className="font-semibold">{project.rating}</span>
-                          </div>
-                          <span>•</span>
-                          <span>{project.sales} sales</span>
-                        </div>
-                      </div>
-
-                      {/* Card Footer Actions */}
-                      <div className="flex gap-2 border-t border-white/5 pt-4 mt-auto">
-                        <button
-                          onClick={() => setPreviewProject(project)}
-                          className="flex-1 h-9 flex items-center justify-center rounded-lg border border-white/10 bg-white/3 text-[10px] font-semibold text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-                        >
-                          Live Preview
-                        </button>
-                        <Link
-                          href={`/projects/${project.id}`}
-                          className="flex-1 h-9 flex items-center justify-center rounded-lg bg-brand-primary text-[10px] font-semibold text-white hover:bg-brand-primary-dark transition-colors cursor-pointer"
-                        >
-                          View Details
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* List Layout */
-              <div className="flex flex-col gap-4">
-                {paginatedProjects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="glass-panel glass-panel-hover flex flex-col sm:flex-row rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300"
-                  >
-                    {/* List Media */}
-                    <Link
-                      href={`/projects/${project.id}`}
-                      className="relative w-full sm:w-48 aspect-[16/10] shrink-0 bg-zinc-950 block"
-                    >
-                      <Image
-                        src={project.image}
-                        alt={project.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </Link>
-
-                    {/* List Copy */}
-                    <div className="flex-1 flex flex-col sm:flex-row justify-between p-5 gap-4">
-                      <div className="flex flex-col gap-1.5 text-left flex-1">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-brand-accent">
-                          {project.category}
-                        </span>
-                        <Link
-                          href={`/projects/${project.id}`}
-                          className="font-display font-bold text-base text-zinc-100 group-hover:text-brand-accent transition-colors block text-left"
-                        >
-                          {project.title}
-                        </Link>
-                        <p className="text-zinc-500 text-xs line-clamp-1 max-w-md">
-                          {project.longDescription}
-                        </p>
-                        
-                        <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-medium mt-1">
-                          <div className="flex items-center gap-0.5 text-brand-accent">
-                            <Star className="h-3 w-3 fill-brand-accent text-brand-accent" />
-                            <span className="font-semibold">{project.rating}</span>
-                          </div>
-                          <span>•</span>
-                          <span>{project.sales} sales</span>
-                        </div>
-                      </div>
-
-                      {/* List Price & Actions */}
-                      <div className="flex flex-col sm:items-end justify-between gap-4 shrink-0">
-                        <span className="font-display font-bold text-xl text-white">
-                          ${project.price}
-                        </span>
-                        
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setPreviewProject(project)}
-                            className="h-9 px-4 flex items-center justify-center rounded-lg border border-white/10 bg-white/3 text-[10px] font-semibold text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-                          >
-                            Live Preview
-                          </button>
-                          <Link
-                            href={`/projects/${project.id}`}
-                            className="h-9 px-4 flex items-center justify-center rounded-lg bg-brand-primary text-[10px] font-semibold text-white hover:bg-brand-primary-dark transition-colors cursor-pointer"
-                          >
-                            View Details
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-1.5 mt-8">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="h-9 w-9 rounded-lg border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-
-                {Array.from({ length: totalPages }).map((_, i) => {
-                  const pageNum = i + 1;
-                  const isActive = currentPage === pageNum;
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`h-9 w-9 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-brand-primary/20 text-brand-accent border border-brand-primary/30"
-                          : "border border-white/10 text-zinc-400 hover:bg-white/5 hover:text-white"
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="h-9 w-9 rounded-lg border border-white/10 flex items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-          </section>
-
-        </div>
+        </section>
       </main>
-
-      <Footer />
-
-      {/* Live Preview Simulated Frame Overlay */}
-      <LivePreviewModal
-        project={previewProject}
-        onClose={() => setPreviewProject(null)}
-      />
     </div>
   );
 }

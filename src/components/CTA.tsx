@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function CTA() {
   return (
     <section className="py-20 px-6 sm:px-8 max-w-7xl mx-auto">
@@ -18,12 +20,18 @@ export default function CTA() {
 
         {/* Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-4 mt-4 z-10">
-          <button className="inline-flex h-12 items-center justify-center rounded-xl bg-brand-primary px-6 text-sm font-semibold text-white shadow-lg shadow-brand-primary/25 transition-all hover:bg-brand-primary-dark hover:shadow-brand-primary/45 active:scale-95">
+          <Link
+            href="/explore"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-brand-primary px-6 text-sm font-semibold text-white shadow-lg shadow-brand-primary/25 transition-all hover:bg-brand-primary-dark hover:shadow-brand-primary/45 active:scale-95 cursor-pointer"
+          >
             Start Browsing Now
-          </button>
-          <button className="inline-flex h-12 items-center justify-center rounded-xl px-6 text-sm font-semibold text-zinc-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all active:scale-95">
+          </Link>
+          <Link
+            href="/support"
+            className="inline-flex h-12 items-center justify-center rounded-xl px-6 text-sm font-semibold text-zinc-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all active:scale-95 cursor-pointer"
+          >
             Talk to Sales
-          </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -637,7 +637,7 @@ export default function CheckoutPage() {
             <p className="mt-4 text-center text-xs text-zinc-500 leading-relaxed">
               By completing this purchase, you agree to our{" "}
               <Link
-                href="#"
+                href="/legal"
                 className="text-zinc-400 underline underline-offset-2 hover:text-white transition-colors"
               >
                 Terms &amp; Conditions
@@ -663,13 +663,13 @@ export default function CheckoutPage() {
 
           {/* Links */}
           <div className="flex items-center gap-6 text-xs text-zinc-500 font-medium">
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="/legal" className="hover:text-white transition-colors">
               Terms of Service
             </Link>
-            <Link href="#" className="hover:text-white transition-colors">
+            <Link href="/help-center" className="hover:text-white transition-colors">
               Help Center
             </Link>
             <Link href="#" className="hover:text-white transition-colors">

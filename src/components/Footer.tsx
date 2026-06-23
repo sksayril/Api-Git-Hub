@@ -19,14 +19,16 @@ export default function Footer() {
           </Link>
           
           <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed max-w-xs">
-            The premier digital marketplace for SaaS templates, UI kits, and professional design assets.
+            The premier digital marketplace for full stack projects, UI components, Flutter apps, and API services.
           </p>
         </div>
 
         {/* Marketplace Links */}
         <div className="flex flex-col gap-4 text-left">
-          <h4 className="font-display font-semibold text-xs text-zinc-400 tracking-wider uppercase">
-            Marketplace
+          <h4 className="font-display font-semibold text-xs tracking-wider uppercase">
+            <Link href="/marketplace" className="text-zinc-400 hover:text-white transition-colors">
+              Marketplace
+            </Link>
           </h4>
           <ul className="flex flex-col gap-2.5 text-xs sm:text-sm text-zinc-500 font-medium">
             <li><Link href="/explore" className="hover:text-white transition-colors">Browse Items</Link></li>
@@ -41,21 +43,19 @@ export default function Footer() {
             Company
           </h4>
           <ul className="flex flex-col gap-2.5 text-xs sm:text-sm text-zinc-500 font-medium">
-            <li><Link href="#" className="hover:text-white transition-colors">About Us</Link></li>
-            <li><Link href="#" className="hover:text-white transition-colors">Help Center</Link></li>
-            <li><Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+            <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+            <li><Link href="/help-center" className="hover:text-white transition-colors">Help Center</Link></li>
+            <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
           </ul>
         </div>
 
         {/* Legal Links */}
         <div className="flex flex-col gap-4 text-left">
-          <h4 className="font-display font-semibold text-xs text-zinc-400 tracking-wider uppercase">
-            Legal
+          <h4 className="font-display font-semibold text-xs tracking-wider uppercase">
+            <Link href="/legal" className="text-zinc-400 hover:text-white transition-colors">
+              Legal &amp; Terms
+            </Link>
           </h4>
-          <ul className="flex flex-col gap-2.5 text-xs sm:text-sm text-zinc-500 font-medium">
-            <li><Link href="#" className="hover:text-white transition-colors">License</Link></li>
-            <li><Link href="#" className="hover:text-white transition-colors">Terms</Link></li>
-          </ul>
         </div>
       </div>
 
