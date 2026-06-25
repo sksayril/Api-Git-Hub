@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Package } from "lucide-react";
+import Image from "next/image";
 import CartDrawer from "@/components/CartDrawer";
 import NavLinks from "@/components/NavLinks";
 import NavActions from "@/components/NavActions";
@@ -12,10 +12,14 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl h-20 items-center justify-between px-6 sm:px-8">
         
         {/* Left Side Logo & Branding */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-brand-accent shadow-lg shadow-brand-primary/20">
-            <Package className="h-5 w-5 text-white" />
-          </div>
+        <Link href="/" aria-label="Go to home" className="flex items-center gap-2 group">
+          <Image
+            src="/images/api_github_logo.png"
+            alt="Api GitHub logo"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-xl object-cover shadow-lg shadow-brand-primary/20 transition-opacity group-hover:opacity-90"
+          />
           <span className="font-display text-xl font-bold tracking-tight text-white transition-colors group-hover:text-brand-accent">
             Project<span className="text-brand-primary">Hub</span>
           </span>

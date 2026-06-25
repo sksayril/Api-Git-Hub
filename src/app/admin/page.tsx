@@ -1,485 +1,510 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Server,
+  Megaphone,
+  Search,
+  Database,
+  BarChart3,
+  Users,
+  UserCog,
+  CheckSquare,
+  FileText,
+  Headphones,
+  Settings,
+  Activity,
+  Bell,
+  Sun,
+  ChevronDown,
+  LogOut,
+  TrendingUp,
+  Zap,
+  HelpCircle,
+} from "lucide-react";
 
-/* ================================================================== */
-/* INLINE SVG ICONS                                                     */
-/* ================================================================== */
-const IC = {
-  Dashboard: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <rect x="3" y="3" width="7" height="7" rx="1.2" /><rect x="14" y="3" width="7" height="7" rx="1.2" />
-      <rect x="3" y="14" width="7" height="7" rx="1.2" /><rect x="14" y="14" width="7" height="7" rx="1.2" />
-    </svg>
-  ),
-  Upload: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  ),
-  Manage: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
-      <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
-    </svg>
-  ),
-  Orders: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
-    </svg>
-  ),
-  Users: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  ),
-  Categories: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
-    </svg>
-  ),
-  Analytics: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" /><line x1="2" y1="20" x2="22" y2="20" />
-    </svg>
-  ),
-  Settings: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-    </svg>
-  ),
-  Help: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  ),
-  Logout: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4.5 w-4.5">
-      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-  ),
-  Search: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4">
-      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  ),
-  Bell: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5">
-      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
-    </svg>
-  ),
-  Moon: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5">
-      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-    </svg>
-  ),
-  TrendUp: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-3.5 w-3.5">
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" />
-    </svg>
-  ),
-  TrendDown: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-3.5 w-3.5">
-      <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" />
-    </svg>
-  ),
-  Receipt: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7 opacity-30">
-      <path d="M4 2v20l3-2 2 2 2-2 2 2 2-2 3 2V2l-3 2-2-2-2 2-2-2-2 2z" />
-      <line x1="9" y1="9" x2="15" y2="9" /><line x1="9" y1="13" x2="15" y2="13" />
-    </svg>
-  ),
-  UsersOutline: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7 opacity-30">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  ),
-  ShoppingBag: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7 opacity-30">
-      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" />
-      <path d="M16 10a4 4 0 01-8 0" />
-    </svg>
-  ),
-  Rocket: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-7 w-7 opacity-30">
-      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z" />
-      <path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z" />
-      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-    </svg>
-  ),
-};
+import AdminProjectsView from "@/components/admin/AdminProjectsView";
+import AdminServersView from "@/components/admin/AdminServersView";
+import AdminMetaAdsView from "@/components/admin/AdminMetaAdsView";
+import AdminSeoToolsView from "@/components/admin/AdminSeoToolsView";
+import AdminBackupsView from "@/components/admin/AdminBackupsView";
+import AdminAnalyticsView from "@/components/admin/AdminAnalyticsView";
+import AdminClientsView from "@/components/admin/AdminClientsView";
+import AdminTeamMembersView from "@/components/admin/AdminTeamMembersView";
+import AdminTasksView from "@/components/admin/AdminTasksView";
+import AdminInvoicesView from "@/components/admin/AdminInvoicesView";
+import AdminSupportTicketsView from "@/components/admin/AdminSupportTicketsView";
+import AdminSettingsView from "@/components/admin/AdminSettingsView";
+import AdminActivityLogsView from "@/components/admin/AdminActivityLogsView";
+import AdminHelpView from "@/components/admin/AdminHelpView";
+import { showLogoutConfirmation } from "@/components/admin/LogoutConfirmToast";
 
-/* ================================================================== */
-/* DATA                                                                 */
-/* ================================================================== */
+interface AdminUser {
+  name: string;
+  email: string;
+  role: string;
+}
+
+const mainNav = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "projects", label: "Projects", icon: FolderKanban },
+  { id: "servers", label: "Servers", icon: Server },
+  { id: "meta-ads", label: "Meta Ads", icon: Megaphone },
+  { id: "seo", label: "SEO Tools", icon: Search },
+  { id: "backups", label: "Backups", icon: Database },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
+];
+
+const mgmtNav = [
+  { id: "clients", label: "Clients", icon: Users },
+  { id: "team", label: "Team Members", icon: UserCog },
+  { id: "tasks", label: "Tasks", icon: CheckSquare },
+  { id: "invoices", label: "Invoices", icon: FileText },
+  { id: "tickets", label: "Support Tickets", icon: Headphones },
+];
+
+const settingsNav = [
+  { id: "settings", label: "Settings", icon: Settings },
+  { id: "logs", label: "Activity Logs", icon: Activity },
+];
+
 const stats = [
-  { id: "revenue", label: "Total Revenue", value: "$128,430", change: "+12%", up: true, icon: <IC.Receipt /> },
-  { id: "users", label: "Total Users", value: "12,450", change: "+8%", up: true, icon: <IC.UsersOutline /> },
-  { id: "orders", label: "Total Orders", value: "8,920", change: "+18%", up: true, icon: <IC.ShoppingBag /> },
-  { id: "projects", label: "Total Projects", value: "450", change: "-2%", up: false, icon: <IC.Rocket /> },
+  { label: "Total Projects", value: "24", change: "+12%", sub: "from last month", icon: FolderKanban, color: "text-blue-400" },
+  { label: "Active Servers", value: "8", change: "All systems operational", sub: "", icon: Server, color: "text-emerald-400", badge: true },
+  { label: "Meta Ads Campaigns", value: "15", change: "+18%", sub: "from last month", icon: Megaphone, color: "text-violet-400" },
+  { label: "Total Ad Spend", value: "$18,420", change: "+8%", sub: "from last month", icon: TrendingUp, color: "text-amber-400" },
 ];
 
-const recentOrders = [
-  { id: "#PH-94210", initials: "SM", name: "Sarah Miller", color: "bg-slate-600", project: "Cyberpunk UI Asset Pack", amount: "$1,250.00", status: "Completed" },
-  { id: "#PH-94211", initials: "JD", name: "John Doe", color: "bg-sky-600", project: "SaaS Landing Template", amount: "$890.00", status: "Pending" },
-  { id: "#PH-94212", initials: "EK", name: "Elena Kostic", color: "bg-violet-700", project: "Motion Graphic Kit v2", amount: "$2,400.00", status: "Completed" },
-  { id: "#PH-94213", initials: "MW", name: "Marcus Wong", color: "bg-purple-700", project: "E-commerce API Module", amount: "$450.00", status: "Completed" },
-  { id: "#PH-94214", initials: "LP", name: "Lisa Park", color: "bg-rose-700", project: "Mobile App Design System", amount: "$3,100.00", status: "Pending" },
+const servers = [
+  { name: "backend-server-01", env: "Production", uptime: "99.9%", status: "online" },
+  { name: "api-server-02", env: "Production", uptime: "100%", status: "online" },
+  { name: "staging-server-01", env: "Staging", uptime: "99.5%", status: "online" },
+  { name: "db-server-01", env: "Production", uptime: "99.8%", status: "online" },
 ];
 
-const sideNav = [
-  { id: "dashboard", label: "Dashboard", icon: <IC.Dashboard /> },
-  { id: "upload", label: "Upload Project", icon: <IC.Upload /> },
-  { id: "manage", label: "Manage Projects", icon: <IC.Manage /> },
-  { id: "orders", label: "Orders", icon: <IC.Orders /> },
-  { id: "users", label: "Users", icon: <IC.Users /> },
-  { id: "categories", label: "Categories", icon: <IC.Categories /> },
-  { id: "analytics", label: "Analytics", icon: <IC.Analytics /> },
-  { id: "settings", label: "Settings", icon: <IC.Settings /> },
+const projects = [
+  { name: "E-commerce Backend", stack: "Node.js, MongoDB", status: "Active" },
+  { name: "Booking API", stack: "Node.js, MongoDB", status: "In Progress" },
+  { name: "Admin Dashboard", stack: "Next.js, Tailwind", status: "Active" },
+  { name: "Mobile App API", stack: "Express, MongoDB", status: "Active" },
 ];
 
-/* ── Monthly Sales Bar Chart data ── */
-const barData = [
-  { month: "JAN", h: 38 },
-  { month: "FEB", h: 55 },
-  { month: "MAR", h: 68 },
-  { month: "APR", h: 82 },
-  { month: "MAY", h: 100, active: true },
-  { month: "JUN", h: 72 },
+const campaigns = [
+  { name: "Summer Sale 2026", status: "Active", spend: "$2,450" },
+  { name: "Brand Awareness Q2", status: "Paused", spend: "$1,820" },
+  { name: "Lead Gen Campaign", status: "Active", spend: "$3,100" },
 ];
 
-/* ── Revenue Area Chart points (SVG path, 600×160 viewBox) ── */
-const areaPoints =
-  "M0,148 C60,145 90,138 130,120 C180,100 200,90 240,72 C290,48 320,38 370,22 C410,10 450,6 520,2 L520,160 L0,160 Z";
-const linePath =
-  "M0,148 C60,145 90,138 130,120 C180,100 200,90 240,72 C290,48 320,38 370,22 C410,10 450,6 520,2";
+const seoMetrics = [
+  { label: "Total Keywords", value: "1,284", trend: "+12%" },
+  { label: "Top 3 Rankings", value: "342", trend: "+8%" },
+  { label: "Organic Traffic", value: "48.2K", trend: "+24%" },
+  { label: "Backlinks", value: "2,891", trend: "+5%" },
+];
 
-/* ================================================================== */
-/* PAGE COMPONENT                                                       */
-/* ================================================================== */
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [activeNav, setActiveNav] = useState("dashboard");
+  const [admin, setAdmin] = useState<AdminUser | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.admin) setAdmin(data.admin);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleLogoutClick = () => {
+    if (loggingOut) return;
+    showLogoutConfirmation(() => {
+      setAdmin(null);
+      setLoggingOut(true);
+      router.push("/admin/login");
+      router.refresh();
+    });
+  };
+
+  const initials = admin?.name
+    ? admin.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "AD";
+
+  const NavItem = ({
+    item,
+    active,
+    onClick,
+  }: {
+    item: { id: string; label: string; icon: React.ElementType };
+    active: boolean;
+    onClick: () => void;
+  }) => {
+    const Icon = item.icon;
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+          active
+            ? "bg-blue-600/20 text-blue-400"
+            : "text-zinc-400 hover:text-white hover:bg-white/5"
+        }`}
+      >
+        <Icon className="w-4 h-4 shrink-0" />
+        {item.label}
+      </button>
+    );
+  };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0e1117] text-[#e8eaf0] font-sans antialiased">
-
-      {/* ============================================================ */}
-      {/* SIDEBAR                                                       */}
-      {/* ============================================================ */}
-      <aside className="flex w-[210px] shrink-0 flex-col bg-[#111520] border-r border-white/5 overflow-y-auto">
-
-        {/* Logo */}
-        <div className="px-5 pt-7 pb-6">
-          <p className="font-display font-bold text-lg text-white leading-tight">ProjectHub</p>
-          <p className="text-[11px] text-violet-400 mt-0.5 font-medium">Premium Admin</p>
+    <div className="flex h-screen overflow-hidden bg-[#0b1120] text-zinc-100 font-sans">
+      {/* Sidebar */}
+      <aside className="w-[240px] shrink-0 flex flex-col bg-[#0f1729] border-r border-white/5 overflow-y-auto">
+        <div className="px-5 py-6 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/images/api_github_logo.png"
+              alt="Cripcocode"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-lg object-cover"
+            />
+            <div>
+              <p className="text-[11px] font-bold text-white leading-tight">CRIPCOCODE</p>
+              <p className="text-[9px] text-zinc-500 leading-tight">TECHNOLOGIES PVT LTD</p>
+            </div>
+          </div>
         </div>
 
-        {/* Nav Links */}
-        <nav className="flex flex-col gap-0.5 px-3 flex-1">
-          {sideNav.map((item) => (
-            <button
-              key={item.id}
-              id={`admin-nav-${item.id}`}
-              onClick={() => setActiveNav(item.id)}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all cursor-pointer relative ${
-                activeNav === item.id
-                  ? "bg-violet-600/15 text-white"
-                  : "text-zinc-500 hover:text-zinc-200 hover:bg-white/4"
-              }`}
-            >
-              {activeNav === item.id && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r-full bg-violet-500" />
-              )}
-              <span className={activeNav === item.id ? "text-violet-400" : "text-zinc-600"}>
-                {item.icon}
-              </span>
-              {item.label}
-            </button>
-          ))}
+        <nav className="flex-1 px-3 py-4 space-y-6">
+          <div>
+            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest px-3 mb-2">Main</p>
+            <div className="space-y-0.5">
+              {mainNav.map((item) => (
+                <NavItem key={item.id} item={item} active={activeNav === item.id} onClick={() => setActiveNav(item.id)} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest px-3 mb-2">Management</p>
+            <div className="space-y-0.5">
+              {mgmtNav.map((item) => (
+                <NavItem key={item.id} item={item} active={activeNav === item.id} onClick={() => setActiveNav(item.id)} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest px-3 mb-2">Settings</p>
+            <div className="space-y-0.5">
+              {settingsNav.map((item) => (
+                <NavItem key={item.id} item={item} active={activeNav === item.id} onClick={() => setActiveNav(item.id)} />
+              ))}
+            </div>
+          </div>
         </nav>
 
-        {/* Bottom section */}
-        <div className="flex flex-col gap-1 px-3 pb-4 pt-4 border-t border-white/5">
-          {[{ id: "help", label: "Help", icon: <IC.Help /> }, { id: "logout", label: "Logout", icon: <IC.Logout /> }].map((item) => (
-            <button
-              key={item.id}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-500 hover:text-zinc-200 hover:bg-white/4 transition-all cursor-pointer"
-            >
-              <span className="text-zinc-600">{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-
-          {/* Support Portal */}
+        <div className="p-4 border-t border-white/5">
           <button
-            id="admin-support-portal"
-            className="mt-2 w-full rounded-lg bg-gradient-to-r from-violet-600 to-violet-500 py-2.5 text-sm font-bold text-white shadow-md shadow-violet-600/25 hover:opacity-90 transition-all active:scale-[0.98] cursor-pointer"
+            type="button"
+            onClick={() => setActiveNav("help")}
+            className={`w-full text-left rounded-xl p-4 mb-3 transition-all ${
+              activeNav === "help"
+                ? "bg-blue-600/20 border border-blue-500/40"
+                : "bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600/15 hover:border-blue-500/30"
+            }`}
           >
-            Support Portal
+            <div className="flex items-center gap-2 mb-1">
+              <HelpCircle className="w-4 h-4 text-blue-400" />
+              <p className="text-xs font-semibold text-white">Need Help?</p>
+            </div>
+            <p className="text-[10px] text-zinc-500">Contact support team</p>
+          </button>
+          <button
+            type="button"
+            onClick={handleLogoutClick}
+            disabled={loggingOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            {loggingOut ? "Logging out..." : "Logout"}
           </button>
         </div>
       </aside>
 
-      {/* ============================================================ */}
-      {/* MAIN CONTENT                                                  */}
-      {/* ============================================================ */}
+      {/* Main */}
       <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <header className="h-16 shrink-0 flex items-center justify-between border-b border-white/5 bg-[#0b1120] px-6 gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Search projects, servers, ads, or tasks..."
+              className="w-full bg-[#111827] border border-white/8 rounded-xl py-2 pl-10 pr-16 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/40"
+            />
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-600 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">⌘K</kbd>
+          </div>
 
-        {/* ── Top Bar ── */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 bg-[#0e1117] px-8">
-          <h1 className="font-display font-bold text-xl text-white">ProjectHub Admin</h1>
-
-          <div className="flex items-center gap-4">
-            {/* Search */}
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
-                <IC.Search />
-              </span>
-              <input
-                id="admin-search"
-                type="text"
-                placeholder="Search analytics..."
-                className="h-9 w-52 rounded-lg border border-white/6 bg-[#1a1d2e] pl-9 pr-4 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 transition-colors"
-              />
-            </div>
-
-            {/* Bell */}
-            <button className="relative p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer">
-              <IC.Bell />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-violet-500" />
+          <div className="flex items-center gap-3">
+            <button type="button" className="relative p-2 text-zinc-400 hover:text-white transition-colors">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-blue-600 text-[9px] font-bold flex items-center justify-center text-white">3</span>
             </button>
-
-            {/* Dark mode */}
-            <button className="p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer">
-              <IC.Moon />
+            <button type="button" className="p-2 text-zinc-400 hover:text-white transition-colors">
+              <Sun className="w-5 h-5" />
             </button>
-
-            {/* User */}
-            <div className="flex items-center gap-3 rounded-xl border border-white/6 bg-[#1a1d2e] px-3 py-1.5">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-white leading-none">Alex Rivera</p>
-                <p className="text-[10px] text-zinc-500 tracking-widest uppercase mt-0.5">Super Admin</p>
+            <div className="flex items-center gap-2 bg-[#111827] border border-white/8 rounded-xl px-3 py-1.5">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white">
+                {initials}
               </div>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shrink-0 text-xs font-bold text-white">
-                AR
+              <div className="hidden sm:block">
+                <p className="text-sm font-semibold text-white leading-none">{admin?.name || "Admin"}</p>
+                <p className="text-[10px] text-zinc-500 capitalize mt-0.5">{admin?.role?.replace("_", " ") || "Super Admin"}</p>
               </div>
+              <ChevronDown className="w-4 h-4 text-zinc-500" />
             </div>
           </div>
         </header>
 
-        {/* ── Scrollable Body ── */}
-        <main className="flex-1 overflow-y-auto p-8 space-y-6">
-
-          {/* ── Stat Cards ── */}
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
-            {stats.map((s) => (
-              <div
-                key={s.id}
-                className="relative rounded-2xl border border-white/6 bg-[#141720] p-5 overflow-hidden"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`flex items-center gap-1.5 text-xs font-semibold ${s.up ? "text-emerald-400" : "text-rose-400"}`}>
-                    {s.up ? <IC.TrendUp /> : <IC.TrendDown />}
-                    {s.change}
-                  </div>
-                  <div className="text-zinc-600">{s.icon}</div>
-                </div>
-                <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-1.5">
-                  {s.label}
-                </p>
-                <p className="font-display font-bold text-3xl text-white">{s.value}</p>
-              </div>
-            ))}
+        {/* Body */}
+        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+          {activeNav === "projects" ? (
+            <AdminProjectsView />
+          ) : activeNav === "servers" ? (
+            <AdminServersView />
+          ) : activeNav === "meta-ads" ? (
+            <AdminMetaAdsView />
+          ) : activeNav === "seo" ? (
+            <AdminSeoToolsView />
+          ) : activeNav === "backups" ? (
+            <AdminBackupsView />
+          ) : activeNav === "analytics" ? (
+            <AdminAnalyticsView />
+          ) : activeNav === "clients" ? (
+            <AdminClientsView />
+          ) : activeNav === "team" ? (
+            <AdminTeamMembersView />
+          ) : activeNav === "tasks" ? (
+            <AdminTasksView />
+          ) : activeNav === "invoices" ? (
+            <AdminInvoicesView />
+          ) : activeNav === "tickets" ? (
+            <AdminSupportTicketsView />
+          ) : activeNav === "settings" ? (
+            <AdminSettingsView />
+          ) : activeNav === "logs" ? (
+            <AdminActivityLogsView />
+          ) : activeNav === "help" ? (
+            <AdminHelpView onNavigate={setActiveNav} />
+          ) : activeNav === "dashboard" ? (
+          <>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-display font-bold text-white">Dashboard</h1>
+              <p className="text-sm text-zinc-500 mt-1">Overview of your systems, campaigns, and performance.</p>
+            </div>
+            <button type="button" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shrink-0">
+              <Zap className="w-4 h-4" />
+              Quick Actions
+            </button>
           </div>
 
-          {/* ── Charts Row ── */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-
-            {/* Monthly Sales Bar Chart */}
-            <div className="rounded-2xl border border-white/6 bg-[#141720] p-6">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h2 className="font-display font-bold text-base text-white">Monthly Sales</h2>
-                  <p className="text-xs text-zinc-500 mt-0.5">Volume over last 6 months</p>
-                </div>
-                <button
-                  id="admin-export-btn"
-                  className="rounded-lg border border-white/10 bg-[#1a1d2e] px-4 py-1.5 text-xs font-bold text-zinc-300 tracking-widest uppercase hover:border-violet-500/40 hover:text-white transition-all cursor-pointer"
-                >
-                  Export
-                </button>
-              </div>
-
-              {/* SVG Bar Chart */}
-              <div className="relative h-44">
-                <svg viewBox="0 0 360 160" className="w-full h-full">
-                  {/* Grid lines */}
-                  {[0, 40, 80, 120, 160].map((y) => (
-                    <line key={y} x1="0" y1={y} x2="360" y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-                  ))}
-
-                  {/* Bars */}
-                  {barData.map((d, i) => {
-                    const barW = 36;
-                    const gap = 60;
-                    const x = i * gap + 12;
-                    const barH = (d.h / 100) * 130;
-                    const y = 150 - barH;
-                    return (
-                      <g key={d.month}>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={barW}
-                          height={barH}
-                          rx="5"
-                          fill={d.active ? "url(#barGrad)" : "rgba(139,92,246,0.18)"}
-                        />
-                      </g>
-                    );
-                  })}
-
-                  <defs>
-                    <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8b5cf6" />
-                      <stop offset="100%" stopColor="#6d28d9" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-
-                {/* X-axis labels */}
-                <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
-                  {barData.map((d) => (
-                    <span
-                      key={d.month}
-                      className={`text-[11px] font-semibold ${d.active ? "text-white" : "text-zinc-600"}`}
-                    >
-                      {d.month}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Revenue Analytics Area Chart */}
-            <div className="rounded-2xl border border-white/6 bg-[#141720] p-6">
-              <div className="mb-4">
-                <h2 className="font-display font-bold text-base text-white">Revenue Analytics</h2>
-                <p className="text-xs text-zinc-500 mt-0.5">Growth trends and forecasts</p>
-              </div>
-
-              {/* Big number */}
-              <div className="flex items-end gap-3 mb-4">
-                <span className="font-display font-bold text-3xl text-white">$42,912</span>
-                <span className="flex items-center gap-1 mb-0.5 text-xs font-semibold text-emerald-400">
-                  <IC.TrendUp />
-                  +24.5% vs last month
-                </span>
-              </div>
-
-              {/* Area Chart SVG */}
-              <div className="relative h-36">
-                <svg viewBox="0 0 520 160" className="w-full h-full" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.35" />
-                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.02" />
-                    </linearGradient>
-                  </defs>
-                  {/* Grid lines */}
-                  {[0, 40, 80, 120, 160].map((y) => (
-                    <line key={y} x1="0" y1={y} x2="520" y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-                  ))}
-                  {/* Area fill */}
-                  <path d={areaPoints} fill="url(#areaGrad)" />
-                  {/* Line stroke */}
-                  <path d={linePath} fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* End dot */}
-                  <circle cx="520" cy="2" r="4" fill="#8b5cf6" />
-                  <circle cx="520" cy="2" r="8" fill="#8b5cf6" fillOpacity="0.2" />
-                </svg>
-
-                {/* X-axis labels */}
-                <div className="absolute bottom-0 left-0 right-0 flex justify-between">
-                  {["01 JUN", "08 JUN", "15 JUN", "22 JUN", "30 JUN"].map((l) => (
-                    <span key={l} className="text-[10px] text-zinc-600 font-medium">{l}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Recent Orders Table ── */}
-          <div className="rounded-2xl border border-white/6 bg-[#141720] overflow-hidden">
-
-            {/* Table Header */}
-            <div className="flex items-center justify-between px-7 py-5 border-b border-white/5">
-              <h2 className="font-display font-bold text-base text-white">Recent Orders</h2>
-              <button
-                id="admin-view-all-orders"
-                className="text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors cursor-pointer"
-              >
-                View All
-              </button>
-            </div>
-
-            {/* Column Headers */}
-            <div className="grid grid-cols-[140px_1fr_1fr_120px_110px] gap-4 px-7 py-3 border-b border-white/5">
-              {["ORDER ID", "CUSTOMER", "PROJECT", "AMOUNT", "STATUS"].map((col) => (
-                <span key={col} className="text-[10px] font-semibold tracking-widest text-zinc-600 uppercase">
-                  {col}
-                </span>
-              ))}
-            </div>
-
-            {/* Rows */}
-            <div className="divide-y divide-white/4">
-              {recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="grid grid-cols-[140px_1fr_1fr_120px_110px] gap-4 items-center px-7 py-4 hover:bg-white/2 transition-colors"
-                >
-                  {/* Order ID */}
-                  <span className="text-sm font-mono text-zinc-400">{order.id}</span>
-
-                  {/* Customer */}
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${order.color} text-[11px] font-bold text-white`}>
-                      {order.initials}
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {stats.map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.label} className="bg-[#111827] border border-white/6 rounded-2xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-2 rounded-lg bg-white/5 ${s.color}`}>
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <span className="text-sm text-zinc-200 font-medium">{order.name}</span>
+                    {s.badge ? (
+                      <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">{s.change}</span>
+                    ) : (
+                      <span className="text-xs font-semibold text-emerald-400">{s.change}</span>
+                    )}
                   </div>
+                  <p className="text-2xl font-bold text-white mb-1">{s.value}</p>
+                  <p className="text-xs text-zinc-500">{s.label}</p>
+                  {s.sub && <p className="text-[10px] text-zinc-600 mt-0.5">{s.sub}</p>}
+                </div>
+              );
+            })}
+          </div>
 
-                  {/* Project */}
-                  <span className="text-sm text-zinc-400 truncate pr-4">{order.project}</span>
+          {/* Middle row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Server Status */}
+            <div className="bg-[#111827] border border-white/6 rounded-2xl p-5">
+              <h2 className="font-semibold text-white mb-4">Server Status</h2>
+              <div className="space-y-3">
+                {servers.map((srv) => (
+                  <div key={srv.name} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-zinc-200">{srv.name}</p>
+                      <p className="text-[10px] text-zinc-500">{srv.env}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-emerald-400">{srv.uptime}</p>
+                      <div className="flex items-center gap-1 justify-end">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        <span className="text-[10px] text-zinc-500">Online</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                  {/* Amount */}
-                  <span className="font-display font-bold text-sm text-white">{order.amount}</span>
+            {/* Performance Chart */}
+            <div className="bg-[#111827] border border-white/6 rounded-2xl p-5">
+              <h2 className="font-semibold text-white mb-1">System Performance</h2>
+              <p className="text-[10px] text-zinc-500 mb-4">Last 7 days</p>
+              <svg viewBox="0 0 280 100" className="w-full h-28">
+                <defs>
+                  <linearGradient id="perfGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {[0, 25, 50, 75, 100].map((y) => (
+                  <line key={y} x1="0" y1={y} x2="280" y2={y} stroke="rgba(255,255,255,0.04)" />
+                ))}
+                <path d="M0,70 C40,65 60,50 90,45 C120,40 140,55 170,35 C200,20 230,30 280,15 L280,100 L0,100 Z" fill="url(#perfGrad)" />
+                <path d="M0,70 C40,65 60,50 90,45 C120,40 140,55 170,35 C200,20 230,30 280,15" fill="none" stroke="#3b82f6" strokeWidth="2" />
+                <path d="M0,80 C40,78 80,72 120,68 C160,62 200,70 240,60 C260,55 270,58 280,55" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4 2" />
+              </svg>
+              <div className="flex gap-4 mt-2">
+                {["CPU", "RAM", "Disk"].map((l, i) => (
+                  <div key={l} className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                    <span className={`h-2 w-2 rounded-full ${i === 0 ? "bg-blue-500" : i === 1 ? "bg-violet-500" : "bg-emerald-500"}`} />
+                    {l}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                  {/* Status Badge */}
-                  <div>
-                    <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold ${
-                        order.status === "Completed"
-                          ? "bg-emerald-500/15 text-emerald-400"
-                          : "bg-amber-500/15 text-amber-400"
-                      }`}
-                    >
-                      {order.status}
-                    </span>
+            {/* Meta Ads Donut */}
+            <div className="bg-[#111827] border border-white/6 rounded-2xl p-5">
+              <h2 className="font-semibold text-white mb-1">Meta Ads Overview</h2>
+              <p className="text-[10px] text-zinc-500 mb-4">15 campaigns total</p>
+              <div className="flex items-center gap-6">
+                <div className="relative h-24 w-24 shrink-0">
+                  <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#1e293b" strokeWidth="3" />
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="53 47" />
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f59e0b" strokeWidth="3" strokeDasharray="27 73" strokeDashoffset="-53" />
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#10b981" strokeWidth="3" strokeDasharray="13 87" strokeDashoffset="-80" />
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#6b7280" strokeWidth="3" strokeDasharray="7 93" strokeDashoffset="-93" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">15</span>
                   </div>
                 </div>
-              ))}
+                <div className="space-y-2 text-xs">
+                  {[
+                    { label: "Active", pct: "53%", color: "bg-blue-500" },
+                    { label: "Paused", pct: "27%", color: "bg-amber-500" },
+                    { label: "Completed", pct: "13%", color: "bg-emerald-500" },
+                    { label: "Draft", pct: "7%", color: "bg-zinc-500" },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${item.color}`} />
+                      <span className="text-zinc-400">{item.label}</span>
+                      <span className="text-zinc-500 ml-auto">{item.pct}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Bottom row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Recent Projects */}
+            <div className="lg:col-span-1 bg-[#111827] border border-white/6 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/5">
+                <h2 className="font-semibold text-white">Recent Projects</h2>
+              </div>
+              <div className="divide-y divide-white/4">
+                {projects.map((p) => (
+                  <div key={p.name} className="px-5 py-3.5 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-zinc-200">{p.name}</p>
+                      <p className="text-[10px] text-zinc-500">{p.stack}</p>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-full shrink-0 ${
+                      p.status === "Active" ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"
+                    }`}>
+                      {p.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ad Campaigns */}
+            <div className="bg-[#111827] border border-white/6 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/5">
+                <h2 className="font-semibold text-white">Recent Ad Campaigns</h2>
+              </div>
+              <div className="divide-y divide-white/4">
+                {campaigns.map((c) => (
+                  <div key={c.name} className="px-5 py-3.5 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Megaphone className="w-4 h-4 text-blue-400 shrink-0" />
+                      <p className="text-sm font-medium text-zinc-200">{c.name}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-white">{c.spend}</p>
+                      <span className={`text-[10px] ${c.status === "Active" ? "text-emerald-400" : "text-amber-400"}`}>{c.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SEO Overview */}
+            <div className="bg-[#111827] border border-white/6 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/5">
+                <h2 className="font-semibold text-white">SEO Overview</h2>
+              </div>
+              <div className="divide-y divide-white/4">
+                {seoMetrics.map((m) => (
+                  <div key={m.label} className="px-5 py-3.5 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-zinc-400">{m.label}</p>
+                      <p className="text-lg font-bold text-white">{m.value}</p>
+                    </div>
+                    <span className="text-xs font-semibold text-emerald-400">{m.trend}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <div className="p-4 rounded-2xl bg-white/5 mb-4">
+                <LayoutDashboard className="w-8 h-8 text-zinc-500" />
+              </div>
+              <h2 className="text-lg font-semibold text-white mb-2 capitalize">{activeNav.replace("-", " ")}</h2>
+              <p className="text-sm text-zinc-500 max-w-sm">This section is coming soon. Stay tuned for updates.</p>
+            </div>
+          )}
         </main>
+
+        {/* Footer */}
+        <footer className="h-10 shrink-0 flex items-center justify-between px-6 border-t border-white/5 text-[11px] text-zinc-600">
+          <span>© 2025 Cripcocode Technologies Pvt Ltd. All rights reserved.</span>
+          <span>Version 1.0.0</span>
+        </footer>
       </div>
     </div>
   );
