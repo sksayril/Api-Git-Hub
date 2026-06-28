@@ -1,0 +1,13 @@
+import { NextResponse } from "next/server";
+import { USER_COOKIE } from "@/lib/auth";
+import { cookies } from "next/headers";
+
+export async function POST() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete(USER_COOKIE);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

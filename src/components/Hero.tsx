@@ -60,20 +60,29 @@ export default function Hero() {
         </form>
 
         {/* Quick Actions */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
-          <Link
-            href="/explore"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-primary px-6 text-sm font-semibold text-white shadow-lg shadow-brand-primary/20 transition-all hover:bg-brand-primary-dark hover:shadow-brand-primary/35 active:scale-95 group"
-          >
-            Browse Categories
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+        <div className="flex flex-col items-center gap-4 mt-6">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/explore"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-primary px-6 text-sm font-semibold text-white shadow-lg shadow-brand-primary/20 transition-all hover:bg-brand-primary-dark hover:shadow-brand-primary/35 active:scale-95 group"
+            >
+              Browse Categories
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            
+            <Link
+              href="/explore"
+              className="inline-flex h-12 items-center justify-center rounded-xl px-6 text-sm font-semibold text-zinc-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+            >
+              View Marketplace
+            </Link>
+          </div>
           
           <Link
-            href="/explore"
-            className="inline-flex h-12 items-center justify-center rounded-xl px-6 text-sm font-semibold text-zinc-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+            href="/list-project"
+            className="inline-flex h-12 items-center justify-center rounded-full bg-brand-primary/10 border border-brand-primary/30 px-8 text-sm font-semibold text-brand-accent hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-all active:scale-95 shadow-sm shadow-brand-primary/5 mt-2"
           >
-            View Marketplace
+            Become a Seller
           </Link>
         </div>
       </div>

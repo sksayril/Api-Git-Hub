@@ -29,6 +29,13 @@ export default function NavLinks() {
           </Link>
         );
       })}
+      
+      <Link
+        href="/list-project"
+        className="rounded-full bg-brand-primary/10 border border-brand-primary/30 px-4 py-1.5 text-xs font-semibold text-brand-accent hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-all active:scale-95 shadow-sm shadow-brand-primary/5"
+      >
+        Become a Seller
+      </Link>
     </nav>
   );
 }

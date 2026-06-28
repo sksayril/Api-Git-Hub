@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
+import AuthOverlay from "@/components/AuthOverlay";
 
 /* ------------------------------------------------------------------ */
 /* Promo Codes                                                          */
@@ -82,6 +83,10 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, cartTotal, cartCount, setCartOpen, clearCart } = useCart();
 
+  /* ---- Auth State ---- */
+  const [currentUser, setCurrentUser] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
   /* ---- Form State ---- */
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -104,6 +109,20 @@ export default function CheckoutPage() {
   /* ---- Order Success ---- */
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) {
+          setCurrentUser(data.user);
+          setFullName(data.user.name || "");
+          setEmail(data.user.email || "");
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCheckingAuth(false));
+  }, []);
 
   /* ---- Compute order items (cart or fallback) ---- */
   const orderItems =
@@ -158,17 +177,79 @@ export default function CheckoutPage() {
   };
 
   /* ---- Complete purchase ---- */
-  const handleCompletePurchase = () => {
+  const handleCompletePurchase = async () => {
+    if (!fullName || !email || !phone) {
+      alert("Please fill out all billing details.");
+      return;
+    }
+
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      const billingDetails = { fullName, email, phone };
+      const items = orderItems.map((item) => ({
+        projectId: item.id,
+        title: item.title,
+        price: item.price,
+        image: item.image,
+      }));
+
+      const payload = {
+        billingDetails,
+        items,
+        subtotal,
+        tax,
+        discount,
+        total,
+        paymentMethod,
+        paymentDetails: paymentMethod === "stripe"
+          ? { cardNumber }
+          : paymentMethod === "paypal"
+          ? { paypalEmail }
+          : { upiId }
+      };
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Order placement failed.");
+      }
+
       setOrderSuccess(true);
       setTimeout(() => {
         clearCart();
-        router.push("/");
+        router.push("/dashboard");
       }, 3000);
-    }, 1800);
+    } catch (err: any) {
+      alert(err.message || "Something went wrong.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0e1117] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <AuthOverlay
+        onSuccess={(user) => {
+          setCurrentUser(user);
+          setFullName(user.name);
+          setEmail(user.email);
+        }}
+      />
+    );
+  }
 
   /* ================================================================ */
   /* SUCCESS OVERLAY                                                   */

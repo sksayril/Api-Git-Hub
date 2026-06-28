@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 /* ================================================================== */
 /* ICONS — inline SVGs to avoid any lucide compatibility issues        */
@@ -165,66 +166,24 @@ function IconDollar() {
   );
 }
 
-/* ================================================================== */
-/* DATA                                                                */
-/* ================================================================== */
+interface PurchasedProject {
+  id: string;
+  name: string;
+  version: string;
+  license: string;
+  date: string;
+  price: string;
+  image: string;
+  color: string;
+}
 
-const purchasedProjects = [
-  {
-    id: 1,
-    name: "Lumina SaaS Dashboard",
-    version: "v2.4.0",
-    license: "Commercial License",
-    date: "Oct 24, 2023",
-    price: "$49.00",
-    image: "/images/lumina_dashboard.png",
-    color: "from-violet-600 to-indigo-500",
-  },
-  {
-    id: 2,
-    name: "Nebula 3D Asset Pack",
-    version: "v1.1.0",
-    license: "Full Access",
-    date: "Sep 12, 2023",
-    price: "$120.00",
-    image: "/images/synthetix_ai.png",
-    color: "from-sky-500 to-cyan-400",
-  },
-  {
-    id: 3,
-    name: "Fintech Iconography Set",
-    version: "v3.0.1",
-    license: "Multi-use",
-    date: "Aug 30, 2023",
-    price: "$35.00",
-    image: "/images/collab_flow.png",
-    color: "from-emerald-500 to-teal-400",
-  },
-];
-
-const recentActivity = [
-  {
-    id: 1,
-    icon: "clock",
-    text: "Update available for Lumina Dashboard",
-    time: "2 hours ago",
-    color: "bg-violet-500/15 text-violet-400",
-  },
-  {
-    id: 2,
-    icon: "star",
-    text: "You reviewed Nebula 3D Pack",
-    time: "Yesterday at 4:32 PM",
-    color: "bg-amber-500/15 text-amber-400",
-  },
-  {
-    id: 3,
-    icon: "dollar",
-    text: "Payout of $450.00 processed",
-    time: "3 days ago",
-    color: "bg-emerald-500/15 text-emerald-400",
-  },
-];
+interface UserOrder {
+  id: string;
+  total: string;
+  date: string;
+  status: string;
+  itemCount: number;
+}
 
 type NavItem = {
   id: string;
@@ -233,12 +192,49 @@ type NavItem = {
   badge?: boolean;
 };
 
-/* ================================================================== */
-/* MAIN DASHBOARD PAGE                                                  */
-/* ================================================================== */
 export default function DashboardPage() {
+  const router = useRouter();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [currentPage, setCurrentPage] = useState(1);
+  const [user, setUser] = useState<{ name: string; email: string; id: string } | null>(null);
+  const [purchased, setPurchased] = useState<PurchasedProject[]>([]);
+  const [orders, setOrders] = useState<UserOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check authentication
+    fetch("/api/auth/me")
+      .then((res) => {
+        if (!res.ok) throw new Error("Unauthorized");
+        return res.json();
+      })
+      .then((data) => {
+        setUser(data.user);
+        // Fetch purchased projects
+        return fetch("/api/user/purchased");
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.purchased) setPurchased(data.purchased);
+        if (data.orders) setOrders(data.orders);
+      })
+      .catch(() => {
+        router.push("/explore");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/explore");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const overviewNav: NavItem[] = [
     { id: "dashboard", label: "Dashboard", icon: <IconGrid /> },
@@ -253,33 +249,34 @@ export default function DashboardPage() {
     { id: "settings", label: "Profile Settings", icon: <IconSettings /> },
   ];
 
-  function ActivityIcon({ type }: { type: string }) {
-    if (type === "clock") return <IconClock />;
-    if (type === "star") return <IconStar />;
-    return <IconDollar />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0e1117] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin"></div>
+      </div>
+    );
   }
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "US";
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0e1117] text-white font-sans">
-      {/* ============================================================ */}
-      {/* SIDEBAR                                                       */}
-      {/* ============================================================ */}
+      {/* Sidebar */}
       <aside className="flex w-[230px] shrink-0 flex-col border-r border-white/5 bg-[#111520] overflow-y-auto">
-        {/* Logo */}
         <div className="flex items-center gap-2.5 px-5 py-6 border-b border-white/5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-500">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-primary to-brand-accent">
             <svg viewBox="0 0 24 24" fill="white" className="h-4 w-4">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </div>
           <span className="font-display font-bold text-base text-white tracking-tight">
-            Lumina Market
+            ProjectHub
           </span>
         </div>
 
-        {/* Nav Groups */}
         <nav className="flex flex-col gap-6 px-3 pt-6 flex-1">
-          {/* OVERVIEW */}
           <div>
             <p className="mb-2.5 px-2 text-[10px] font-semibold tracking-widest text-zinc-500 uppercase">
               Overview
@@ -288,19 +285,14 @@ export default function DashboardPage() {
               {overviewNav.map((item) => (
                 <li key={item.id}>
                   <button
-                    id={`nav-${item.id}`}
                     onClick={() => setActiveNav(item.id)}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer ${
                       activeNav === item.id
-                        ? "bg-violet-600/20 text-white"
+                        ? "bg-brand-primary/20 text-white"
                         : "text-zinc-400 hover:bg-white/5 hover:text-white"
                     }`}
                   >
-                    <span
-                      className={
-                        activeNav === item.id ? "text-violet-400" : "text-zinc-500"
-                      }
-                    >
+                    <span className={activeNav === item.id ? "text-brand-accent" : "text-zinc-500"}>
                       {item.icon}
                     </span>
                     {item.label}
@@ -310,7 +302,6 @@ export default function DashboardPage() {
             </ul>
           </div>
 
-          {/* ACCOUNT */}
           <div>
             <p className="mb-2.5 px-2 text-[10px] font-semibold tracking-widest text-zinc-500 uppercase">
               Account
@@ -319,24 +310,19 @@ export default function DashboardPage() {
               {accountNav.map((item) => (
                 <li key={item.id}>
                   <button
-                    id={`nav-${item.id}`}
                     onClick={() => setActiveNav(item.id)}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer ${
                       activeNav === item.id
-                        ? "bg-violet-600/20 text-white"
+                        ? "bg-brand-primary/20 text-white"
                         : "text-zinc-400 hover:bg-white/5 hover:text-white"
                     }`}
                   >
-                    <span
-                      className={
-                        activeNav === item.id ? "text-violet-400" : "text-zinc-500"
-                      }
-                    >
+                    <span className={activeNav === item.id ? "text-brand-accent" : "text-zinc-500"}>
                       {item.icon}
                     </span>
                     <span className="flex-1 text-left">{item.label}</span>
                     {item.badge && (
-                      <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                      <span className="h-2 w-2 rounded-full bg-brand-accent shrink-0" />
                     )}
                   </button>
                 </li>
@@ -345,333 +331,194 @@ export default function DashboardPage() {
           </div>
         </nav>
 
-        {/* User Profile */}
+        {/* User Profile Footer */}
         <div className="p-3 border-t border-white/5">
           <div className="flex items-center gap-3 rounded-xl bg-white/4 px-3 py-3">
-            {/* Avatar */}
-            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-              <span className="text-xs font-bold text-white">AR</span>
+            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-brand-primary to-brand-accent flex items-center justify-center">
+              <span className="text-xs font-bold text-white">{initials}</span>
             </div>
-            {/* Name */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">Alex Rivera</p>
-              <p className="text-[11px] text-zinc-500 truncate">Pro Member</p>
+              <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
+              <p className="text-[11px] text-zinc-500 truncate">Customer</p>
             </div>
-            {/* Logout */}
-            <button className="text-zinc-500 hover:text-white transition-colors cursor-pointer p-1">
+            <button
+              onClick={handleLogout}
+              className="text-zinc-500 hover:text-white transition-colors cursor-pointer p-1"
+              title="Logout"
+            >
               <IconLogout />
             </button>
           </div>
         </div>
       </aside>
 
-      {/* ============================================================ */}
-      {/* MAIN CONTENT                                                  */}
-      {/* ============================================================ */}
+      {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* ---- Top Bar ---- */}
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 bg-[#0e1117] px-8">
           <h1 className="font-display font-bold text-2xl text-white">
-            Welcome back, Alex
+            Welcome back, {user?.name.split(" ")[0]}
           </h1>
 
           <div className="flex items-center gap-4">
-            {/* Search */}
-            <div className="relative hidden sm:block">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
-                <IconSearch />
-              </span>
-              <input
-                id="dashboard-search"
-                type="text"
-                placeholder="Search my projects..."
-                className="h-9 w-56 rounded-lg border border-white/8 bg-white/5 pl-9 pr-4 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-violet-500/50 transition-colors"
-              />
-            </div>
-
-            {/* Cart */}
-            <button className="relative p-2 text-zinc-400 hover:text-white transition-colors cursor-pointer">
-              <IconCart />
-              <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-violet-500 border-2 border-[#0e1117]" />
-            </button>
-
-            {/* List Project */}
             <Link
               href="/explore"
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-violet-600 px-4 text-sm font-semibold text-white hover:bg-violet-700 transition-all active:scale-95 shadow-md shadow-violet-600/25"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand-primary px-4 text-sm font-semibold text-white hover:opacity-95 transition-all active:scale-95 shadow-md shadow-brand-primary/25"
             >
               List Project
             </Link>
           </div>
         </header>
 
-        {/* ---- Scrollable Page Body ---- */}
         <main className="flex-1 overflow-y-auto px-8 py-8 space-y-7">
-
-          {/* ---- Stat Cards ---- */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {/* Total Purchases */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#141720] p-6">
-              <div className="flex items-start justify-between mb-4">
+          {activeNav === "settings" ? (
+            <div className="rounded-2xl border border-white/8 bg-[#141720] p-8 max-w-xl">
+              <h2 className="font-display font-bold text-xl text-white mb-6">Profile Settings</h2>
+              <div className="space-y-4">
                 <div>
-                  <p className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-3">
-                    Total Purchases
-                  </p>
-                  <div className="flex items-end gap-3">
-                    <span className="font-display font-bold text-5xl text-white">12</span>
-                    <span className="flex items-center gap-1 mb-1.5 text-xs font-semibold text-amber-400">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-3 w-3">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                        <polyline points="17 6 23 6 23 12" />
-                      </svg>
-                      +2 this month
-                    </span>
-                  </div>
+                  <label className="text-[11px] font-semibold text-zinc-400 tracking-widest uppercase">Name</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={user?.name}
+                    className="w-full mt-1.5 rounded-lg border border-white/10 bg-white/4 px-4 py-2.5 text-sm text-zinc-400 focus:outline-none"
+                  />
                 </div>
-                <div className="text-zinc-700 opacity-60">
-                  <IconTrendingUp />
-                </div>
-              </div>
-              <div className="h-0.5 w-16 rounded-full bg-amber-500" />
-            </div>
-
-            {/* Downloads */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#141720] p-6">
-              <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-3">
-                    Downloads
-                  </p>
-                  <div className="flex items-end gap-3">
-                    <span className="font-display font-bold text-5xl text-white">45</span>
-                    <span className="mb-1.5 text-xs font-semibold text-zinc-400">Active</span>
-                  </div>
-                </div>
-                <div className="text-zinc-700 opacity-60">
-                  <IconDownloadCloud />
+                  <label className="text-[11px] font-semibold text-zinc-400 tracking-widest uppercase">Email</label>
+                  <input
+                    type="email"
+                    disabled
+                    value={user?.email}
+                    className="w-full mt-1.5 rounded-lg border border-white/10 bg-white/4 px-4 py-2.5 text-sm text-zinc-400 focus:outline-none"
+                  />
                 </div>
               </div>
-              <div className="h-0.5 w-16 rounded-full bg-violet-500" />
             </div>
-
-            {/* Wishlist Items */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#141720] p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-3">
-                    Wishlist Items
-                  </p>
-                  <div className="flex items-end gap-3">
-                    <span className="font-display font-bold text-5xl text-white">08</span>
-                    <span className="mb-1.5 text-xs font-semibold text-zinc-400">Items</span>
-                  </div>
-                </div>
-                <div className="text-zinc-700 opacity-60">
-                  <IconBookmark />
-                </div>
-              </div>
-              <div className="h-0.5 w-16 rounded-full bg-sky-500" />
-            </div>
-          </div>
-
-          {/* ---- Purchased Projects Table ---- */}
-          <div className="rounded-2xl border border-white/8 bg-[#141720] overflow-hidden">
-            {/* Table Header */}
-            <div className="flex items-start justify-between px-7 pt-7 pb-6 border-b border-white/5">
-              <div>
-                <h2 className="font-display font-bold text-xl text-white">
-                  Purchased Projects
-                </h2>
-                <p className="text-sm text-zinc-500 mt-1">
-                  Manage and access your premium digital assets.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <button className="flex items-center justify-center h-8 w-8 rounded-lg border border-white/8 bg-white/4 text-zinc-400 hover:text-white hover:border-white/15 transition-all cursor-pointer">
-                  <IconFilter />
-                </button>
-                <button className="flex items-center justify-center h-8 w-8 rounded-lg border border-white/8 bg-white/4 text-zinc-400 hover:text-white hover:border-white/15 transition-all cursor-pointer">
-                  <IconLayoutGrid />
-                </button>
-              </div>
-            </div>
-
-            {/* Column Headers */}
-            <div className="grid grid-cols-[1fr_160px_120px_140px] px-7 py-3 border-b border-white/5">
-              {["PROJECT", "PURCHASE DATE", "PRICE", "ACTIONS"].map((col) => (
-                <span
-                  key={col}
-                  className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase"
-                >
-                  {col}
-                </span>
-              ))}
-            </div>
-
-            {/* Rows */}
-            <div className="divide-y divide-white/4">
-              {purchasedProjects.map((proj) => (
-                <div
-                  key={proj.id}
-                  className="grid grid-cols-[1fr_160px_120px_140px] items-center px-7 py-5 hover:bg-white/2 transition-colors"
-                >
-                  {/* Project */}
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`h-11 w-11 shrink-0 rounded-xl bg-gradient-to-br ${proj.color} overflow-hidden`}
-                      style={{
-                        backgroundImage: `url(${proj.image})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    />
+          ) : (
+            <>
+              {/* Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#141720] p-6">
+                  <div className="flex items-start justify-between mb-4">
                     <div>
-                      <p className="font-semibold text-sm text-white">{proj.name}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-3 w-3">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        {proj.version} • {proj.license}
+                      <p className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-3">
+                        Total Purchases
                       </p>
+                      <div className="flex items-end gap-3">
+                        <span className="font-display font-bold text-5xl text-white">{purchased.length}</span>
+                      </div>
+                    </div>
+                    <div className="text-zinc-700 opacity-60">
+                      <IconTrendingUp />
                     </div>
                   </div>
+                  <div className="h-0.5 w-16 rounded-full bg-amber-500" />
+                </div>
 
-                  {/* Date */}
-                  <span className="text-sm text-zinc-400">{proj.date}</span>
+                <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#141720] p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-3">
+                        Total Downloads
+                      </p>
+                      <div className="flex items-end gap-3">
+                        <span className="font-display font-bold text-5xl text-white">{purchased.length}</span>
+                        <span className="mb-1.5 text-xs font-semibold text-zinc-400">Active</span>
+                      </div>
+                    </div>
+                    <div className="text-zinc-700 opacity-60">
+                      <IconDownloadCloud />
+                    </div>
+                  </div>
+                  <div className="h-0.5 w-16 rounded-full bg-brand-primary" />
+                </div>
 
-                  {/* Price */}
-                  <span className="font-display font-bold text-sm text-white">{proj.price}</span>
+                <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#141720] p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-3">
+                        Orders Placed
+                      </p>
+                      <div className="flex items-end gap-3">
+                        <span className="font-display font-bold text-5xl text-white">{orders.length}</span>
+                        <span className="mb-1.5 text-xs font-semibold text-zinc-400">Total</span>
+                      </div>
+                    </div>
+                    <div className="text-zinc-700 opacity-60">
+                      <IconBookmark />
+                    </div>
+                  </div>
+                  <div className="h-0.5 w-16 rounded-full bg-sky-500" />
+                </div>
+              </div>
 
-                  {/* Download Button */}
+              {/* Table */}
+              <div className="rounded-2xl border border-white/8 bg-[#141720] overflow-hidden">
+                <div className="flex items-start justify-between px-7 pt-7 pb-6 border-b border-white/5">
                   <div>
-                    <button
-                      id={`download-${proj.id}`}
-                      className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white hover:border-violet-500/40 hover:bg-violet-500/10 transition-all cursor-pointer active:scale-95"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-3.5 w-3.5">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                      </svg>
-                      Download
-                    </button>
+                    <h2 className="font-display font-bold text-xl text-white">
+                      Purchased Projects
+                    </h2>
+                    <p className="text-sm text-zinc-500 mt-1">
+                      Manage and access your premium digital assets.
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-white/5 px-7 py-4">
-              <span className="text-xs text-zinc-500">Showing 3 of 12 projects</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/8 bg-white/4 text-zinc-400 hover:text-white hover:border-white/15 transition-all cursor-pointer"
-                >
-                  <IconChevronLeft />
-                </button>
-                {[1, 2, 3].map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setCurrentPage(p)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                      currentPage === p
-                        ? "bg-violet-600 text-white shadow-sm shadow-violet-500/30"
-                        : "border border-white/8 bg-white/4 text-zinc-400 hover:text-white hover:border-white/15"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage(Math.min(3, currentPage + 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/8 bg-white/4 text-zinc-400 hover:text-white hover:border-white/15 transition-all cursor-pointer"
-                >
-                  <IconChevronRight />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* ---- Bottom Row: Upgrade Card + Recent Activity ---- */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
-            {/* Upgrade to Premium Plus */}
-            <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-gradient-to-br from-[#1a0d3a] via-[#140d2e] to-[#0e1117] p-8">
-              {/* Background glow */}
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 left-0 h-48 w-48 rounded-full bg-violet-600/15 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-32 w-32 rounded-full bg-indigo-600/10 blur-2xl" />
-              </div>
-
-              <div className="relative">
-                <h3 className="font-display font-bold text-2xl text-violet-300 mb-3">
-                  Upgrade to Premium Plus
-                </h3>
-                <p className="text-sm text-zinc-400 leading-relaxed max-w-sm mb-6">
-                  Get early access to exclusive project drops, unlimited commercial
-                  licenses, and 24/7 dedicated support from our curator team.
-                </p>
-                <button
-                  id="upgrade-premium-btn"
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-violet-600 px-8 text-sm font-bold text-white shadow-lg shadow-violet-600/30 hover:bg-violet-700 transition-all active:scale-95 cursor-pointer"
-                >
-                  Unlock Pro Benefits
-                </button>
-              </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="rounded-2xl border border-white/8 bg-[#141720] p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-display font-bold text-base text-white">
-                  Recent Activity
-                </h3>
-                <button className="text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors cursor-pointer">
-                  View all
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${activity.color}`}
-                    >
-                      <ActivityIcon type={activity.icon} />
-                    </div>
-                    {/* Text */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-zinc-200 leading-snug">
-                        {activity.text}
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">{activity.time}</p>
-                    </div>
+                {purchased.length === 0 ? (
+                  <div className="p-12 text-center text-zinc-500 text-sm">
+                    No purchased projects found. Visit the <Link href="/explore" className="text-brand-accent underline">Marketplace</Link> to buy templates!
                   </div>
-                ))}
+                ) : (
+                  <>
+                    <div className="grid grid-cols-[1fr_160px_120px_140px] px-7 py-3 border-b border-white/5">
+                      {["PROJECT", "PURCHASE DATE", "PRICE", "ACTIONS"].map((col) => (
+                        <span key={col} className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase">
+                          {col}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="divide-y divide-white/4">
+                      {purchased.map((proj) => (
+                        <div key={proj.id} className="grid grid-cols-[1fr_160px_120px_140px] items-center px-7 py-5 hover:bg-white/2 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div
+                              className="h-11 w-11 shrink-0 rounded-xl bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 overflow-hidden border border-white/10"
+                              style={{
+                                backgroundImage: `url(${proj.image})`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                              }}
+                            />
+                            <div>
+                              <p className="font-semibold text-sm text-white">{proj.name}</p>
+                              <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
+                                {proj.version} • {proj.license}
+                              </p>
+                            </div>
+                          </div>
+
+                          <span className="text-sm text-zinc-400">{proj.date}</span>
+                          <span className="font-display font-bold text-sm text-white">{proj.price}</span>
+
+                          <div>
+                            <button
+                              onClick={() => alert("Downloading asset bundle...")}
+                              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white hover:border-brand-primary/40 hover:bg-brand-primary/10 transition-all cursor-pointer active:scale-95"
+                            >
+                              <IconDownload />
+                              Download
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-          </div>
-
-          {/* ---- Footer ---- */}
-          <footer className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 pb-4 border-t border-white/5">
-            <p className="text-xs text-zinc-600">
-              © 2024 Lumina Digital Marketplace. All rights reserved.
-            </p>
-            <div className="flex items-center gap-5 text-xs text-zinc-600">
-              <Link href="/privacy-policy" className="hover:text-zinc-400 transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/legal" className="hover:text-zinc-400 transition-colors">
-                Terms of Service
-              </Link>
-              <Link href="/help-center" className="hover:text-zinc-400 transition-colors">
-                Help Center
-              </Link>
-            </div>
-          </footer>
-
+            </>
+          )}
         </main>
       </div>
     </div>

@@ -36,7 +36,8 @@ export default function ProjectDetails() {
   const { addToCart } = useCart();
 
   const projectId = params.id as string;
-  const project = seedProjects.find((p) => p.id === projectId);
+  const [project, setProject] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Active display gallery image
   const [activeImage, setActiveImage] = useState("");
@@ -48,12 +49,51 @@ export default function ProjectDetails() {
   const [licenseDropdownOpen, setLicenseDropdownOpen] = useState(false);
   const [selectedLicense, setSelectedLicense] = useState("Single License");
 
-  // Sync active image on project mount
+  // Fetch project details dynamically on mount
   useEffect(() => {
-    if (project) {
-      setActiveImage(project.image);
+    const fetchProjectDetails = async () => {
+      try {
+        const res = await fetch(`/api/projects/${projectId}`);
+        const data = await res.json();
+        if (res.ok && data.project) {
+          setProject(data.project);
+          setActiveImage(data.project.image || "/images/placeholder.png");
+        } else {
+          const found = seedProjects.find((p) => p.id === projectId);
+          if (found) {
+            setProject(found);
+            setActiveImage(found.image);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch project details, using fallback:", error);
+        const found = seedProjects.find((p) => p.id === projectId);
+        if (found) {
+          setProject(found);
+          setActiveImage(found.image);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (projectId) {
+      void fetchProjectDetails();
     }
-  }, [project]);
+  }, [projectId]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#060612] text-white">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
+          <div className="w-12 h-12 rounded-full border-4 border-brand-primary border-t-transparent animate-spin"></div>
+          <p className="text-zinc-400 text-sm font-medium">Loading project details...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -161,7 +201,7 @@ export default function ProjectDetails() {
 
               {/* Thumbnails list */}
               <div className="grid grid-cols-5 gap-3">
-                {project.thumbnails.map((thumb, idx) => {
+                {(project.thumbnails || []).map((thumb: string, idx: number) => {
                   const isActive = activeImage === thumb;
                   return (
                     <button
@@ -190,7 +230,7 @@ export default function ProjectDetails() {
               </div>
               
               <p className="text-zinc-400 text-sm sm:text-base leading-relaxed font-normal">
-                {project.longDescription}
+                {project.longDescription || project.description}
               </p>
 
               {/* Highlight grids */}
@@ -262,7 +302,7 @@ export default function ProjectDetails() {
             <div className="flex flex-col gap-4 border-t border-white/5 pt-8">
               <h3 className="font-display font-bold text-lg text-white">Technical Stack</h3>
               <div className="flex flex-wrap gap-2.5">
-                {project.tech.map((tag) => (
+                {(project.tech || []).map((tag: string) => (
                   <span
                     key={tag}
                     className="rounded-lg border border-white/5 bg-white/3 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white hover:border-white/10 transition-colors"
@@ -283,7 +323,7 @@ export default function ProjectDetails() {
               </h3>
               
               <div className="relative border-l border-white/5 pl-6 ml-2 flex flex-col gap-6">
-                {project.updates.map((log, idx) => (
+                {(project.updates || []).map((log: any, idx: number) => (
                   <div key={idx} className="relative text-left">
                     {/* Circle Indicator */}
                     <span className="absolute left-[-31px] top-1.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-brand-primary ring-4 ring-[#060612]" />
@@ -294,13 +334,16 @@ export default function ProjectDetails() {
                         <span className="text-[10px] text-zinc-500 font-semibold">{log.date}</span>
                       </div>
                       <ul className="flex flex-col gap-1.5 text-xs text-zinc-400 pl-4 list-disc font-medium">
-                        {log.changes.map((change, i) => (
+                        {(log.changes || []).map((change: string, i: number) => (
                           <li key={i}>{change}</li>
                         ))}
                       </ul>
                     </div>
                   </div>
                 ))}
+                {(!project.updates || project.updates.length === 0) && (
+                  <p className="text-zinc-500 text-xs italic">No updates logged yet.</p>
+                )}
               </div>
             </div>
 
@@ -309,12 +352,12 @@ export default function ProjectDetails() {
               <div className="flex items-center justify-between">
                 <h3 className="font-display font-bold text-lg text-white">What users are saying</h3>
                 <span className="text-xs text-brand-accent font-semibold hover:underline cursor-pointer">
-                  View All {project.reviewsCount} Reviews
+                  View All {project.reviewsCount || 0} Reviews
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {project.reviews.map((review, idx) => (
+                {(project.reviews || []).map((review: any, idx: number) => (
                   <div
                     key={idx}
                     className="rounded-2xl border border-white/5 bg-white/2 p-6 flex flex-col gap-4 text-left hover:border-white/10 transition-colors"
@@ -337,6 +380,9 @@ export default function ProjectDetails() {
                     </p>
                   </div>
                 ))}
+                {(!project.reviews || project.reviews.length === 0) && (
+                  <p className="text-zinc-500 text-xs italic col-span-2">No reviews yet. Be the first to leave a review!</p>
+                )}
               </div>
             </div>
 
@@ -350,9 +396,23 @@ export default function ProjectDetails() {
               <div className="flex flex-col gap-1">
                 <div className="flex items-baseline justify-between">
                   <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">{selectedLicense}</span>
-                  <span className="font-display font-bold text-4xl text-white">
-                    ${project.price.toFixed(2)}
-                  </span>
+                  <div className="flex flex-col items-end text-right">
+                    <div className="flex items-baseline gap-2">
+                      {project.actualPrice && project.actualPrice > project.price && (
+                        <span className="text-rose-500 font-bold text-2xl font-display">
+                          -{Math.round(((project.actualPrice - project.price) / project.actualPrice) * 100)}%
+                        </span>
+                      )}
+                      <span className="font-display font-bold text-4xl text-white">
+                        ${(project.price || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    {project.actualPrice && project.actualPrice > project.price && (
+                      <span className="text-zinc-500 text-xs mt-0.5">
+                        M.R.P.: <span className="line-through">${project.actualPrice.toFixed(2)}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Select License Dropdown */}
@@ -443,7 +503,7 @@ export default function ProjectDetails() {
                     <Calendar className="h-3.5 w-3.5" />
                     Last updated
                   </span>
-                  <span className="font-semibold text-zinc-300">{project.details.lastUpdated}</span>
+                  <span className="font-semibold text-zinc-300">{project.details?.lastUpdated}</span>
                 </div>
 
                 <div className="flex items-center justify-between py-1 border-b border-white/5">
@@ -451,7 +511,7 @@ export default function ProjectDetails() {
                     <Calendar className="h-3.5 w-3.5" />
                     Released
                   </span>
-                  <span className="font-semibold text-zinc-300">{project.details.released}</span>
+                  <span className="font-semibold text-zinc-300">{project.details?.released}</span>
                 </div>
 
                 <div className="flex items-center justify-between py-1 border-b border-white/5">
@@ -459,7 +519,7 @@ export default function ProjectDetails() {
                     <ShieldCheck className="h-3.5 w-3.5" />
                     High Resolution
                   </span>
-                  <span className="font-semibold text-zinc-300">{project.details.highResolution ? "Yes" : "No"}</span>
+                  <span className="font-semibold text-zinc-300">{project.details?.highResolution ? "Yes" : "No"}</span>
                 </div>
 
                 <div className="flex items-center justify-between py-1 border-b border-white/5">
@@ -468,7 +528,7 @@ export default function ProjectDetails() {
                     Documentation
                   </span>
                   <span className="font-semibold text-zinc-300 hover:text-brand-accent hover:underline cursor-pointer">
-                    {project.details.documentation}
+                    {project.details?.documentation}
                   </span>
                 </div>
 
@@ -477,7 +537,7 @@ export default function ProjectDetails() {
                     <Layers className="h-3.5 w-3.5" />
                     File types
                   </span>
-                  <span className="font-semibold text-zinc-300">{project.details.fileTypes.join(", ")}</span>
+                  <span className="font-semibold text-zinc-300">{(project.details?.fileTypes || []).join(", ")}</span>
                 </div>
               </div>
             </div>
@@ -485,11 +545,11 @@ export default function ProjectDetails() {
             {/* Author Profile card */}
             <div className="rounded-2xl border border-white/5 bg-white/2 p-5 flex items-center gap-4 text-left transition-colors hover:border-white/10">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-primary to-brand-accent text-sm font-bold text-white shadow-md">
-                {project.creator.avatar}
+                {project.creator?.avatar}
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Created by</span>
-                <span className="font-display font-bold text-zinc-200">{project.creator.name}</span>
+                <span className="font-display font-bold text-zinc-200">{project.creator?.name}</span>
               </div>
             </div>
 

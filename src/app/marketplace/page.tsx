@@ -14,6 +14,7 @@ const marketplaceItems = [
     title: "Nexus Dashboard UI Kit",
     category: "UI KIT",
     price: 49,
+    actualPrice: 79,
     description: "Modern enterprise dashboard with 120+ components and 40+ pre-mad...",
     rating: 4.9,
     sales: "2.1k sales",
@@ -36,6 +37,7 @@ const marketplaceItems = [
     title: "Nova SaaS Landing Page",
     category: "TEMPLATES",
     price: 35,
+    actualPrice: 59,
     description: "Fully responsive Tailwind CSS template with Framer Motion animations.",
     rating: 5.0,
     sales: "1.5k sales",
@@ -91,6 +93,7 @@ const marketplaceItems = [
     title: "CryptoWallet Mobile Kit",
     category: "UI KIT",
     price: 45,
+    actualPrice: 89,
     description: "Complete mobile application UI kit for DeFi and crypto asset management.",
     rating: 4.8,
     sales: "3.4k sales",
@@ -176,7 +179,7 @@ export default function MarketplacePage() {
             <div key={item.id} className="bg-[#171a26] border border-white/5 rounded-2xl overflow-hidden group hover:border-[#8b7fff]/30 transition-all flex flex-col">
               
               {/* Image */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/40 p-4 pb-0">
+              <Link href={`/projects/${item.id}`} target="_blank" className="relative aspect-[4/3] w-full overflow-hidden bg-black/40 p-4 pb-0 block">
                 <div className="relative w-full h-full rounded-t-xl overflow-hidden border border-white/5 border-b-0">
                   <Image
                     src={item.image}
@@ -192,15 +195,29 @@ export default function MarketplacePage() {
                 </div>
                 
                 {/* Price Pill - Absolute top right of card */}
-                <div className="absolute top-6 right-6 bg-[#1b1e2b]/80 backdrop-blur-md border border-white/10 text-white font-semibold text-sm px-2.5 py-1 rounded-md shadow-lg">
-                  ${item.price}
+                <div className="absolute top-6 right-6 bg-[#1b1e2b]/85 backdrop-blur-md border border-white/10 text-white font-medium text-xs px-2.5 py-1 rounded-lg shadow-xl flex items-center gap-1.5">
+                  <span className="font-semibold text-sm">
+                    ${item.price}
+                  </span>
+                  {(item as any).actualPrice && (item as any).actualPrice > item.price && (
+                    <>
+                      <span className="line-through text-zinc-400 text-[10px]">
+                        ${(item as any).actualPrice}
+                      </span>
+                      <span className="text-[10px] text-emerald-400 font-bold">
+                        {Math.round((((item as any).actualPrice - item.price) / (item as any).actualPrice) * 100)}% OFF
+                      </span>
+                    </>
+                  )}
                 </div>
-              </div>
+              </Link>
 
               {/* Content */}
               <div className="p-5 pt-4 flex-1 flex flex-col">
                 <h3 className="text-base font-medium text-white mb-2 line-clamp-1 group-hover:text-[#a78bfa] transition-colors cursor-pointer">
-                  {item.title}
+                  <Link href={`/projects/${item.id}`} target="_blank">
+                    {item.title}
+                  </Link>
                 </h3>
                 
                 <p className="text-xs text-zinc-400 line-clamp-2 mb-4 flex-1 leading-relaxed">

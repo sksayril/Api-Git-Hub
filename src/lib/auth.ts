@@ -42,3 +42,74 @@ export async function getAdminSession() {
     return null;
   }
 }
+
+export const USER_COOKIE = "user_token";
+
+export interface UserTokenPayload {
+  userId: string;
+  email: string;
+  name: string;
+}
+
+export async function signUserToken(payload: UserTokenPayload) {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("30d")
+    .sign(getSecret());
+}
+
+export async function verifyUserToken(token: string) {
+  const { payload } = await jwtVerify(token, getSecret());
+  return payload as unknown as UserTokenPayload;
+}
+
+export async function getUserSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(USER_COOKIE)?.value;
+  if (!token) return null;
+
+  try {
+    return await verifyUserToken(token);
+  } catch {
+    return null;
+  }
+}
+
+// ─── Seller Auth ──────────────────────────────────────────────────────────────
+
+export const SELLER_COOKIE = "seller_token";
+
+export interface SellerTokenPayload {
+  sellerId: string;
+  email: string;
+  name: string;
+  status: string;
+  verified: boolean;
+}
+
+export async function signSellerToken(payload: SellerTokenPayload) {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("30d")
+    .sign(getSecret());
+}
+
+export async function verifySellerToken(token: string) {
+  const { payload } = await jwtVerify(token, getSecret());
+  return payload as unknown as SellerTokenPayload;
+}
+
+export async function getSellerSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SELLER_COOKIE)?.value;
+  if (!token) return null;
+
+  try {
+    return await verifySellerToken(token);
+  } catch {
+    return null;
+  }
+}
+

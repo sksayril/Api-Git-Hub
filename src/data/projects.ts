@@ -16,11 +16,13 @@ export interface Project {
   title: string;
   category: string;
   tech: string[];
+  tags: string[];
   price: number;
   rating: number;
   sales: number;
   image: string;
   description: string;
+  descriptionMarkdown: string;
   longDescription: string;
   features: string[];
   thumbnails: string[];
@@ -51,6 +53,8 @@ export const seedProjects: Project[] = [
     sales: 1204,
     image: "/images/lumina_dashboard.png",
     description: "Web App - React Admin System",
+    descriptionMarkdown: "Web App - React Admin System",
+    tags: ["Admin", "Dashboard", "React", "Figma"],
     longDescription: "Fintech Pro Dashboard is a meticulously crafted SaaS dashboard designed for high-growth startups and creative enterprises.",
     features: [
       "50+ Modular Components",
@@ -74,6 +78,8 @@ export const seedProjects: Project[] = [
     sales: 850,
     image: "/images/finflow_wallet.png",
     description: "High quality 3D assets.",
+    descriptionMarkdown: "High quality 3D assets.",
+    tags: ["3D", "Assets", "Figma"],
     longDescription: "A massive pack of 3D assets for your next project.",
     features: ["High Resolution", "Multiple Angles"],
     thumbnails: [],
@@ -93,6 +99,8 @@ export const seedProjects: Project[] = [
     sales: 432,
     image: "/images/synthetix_ai.png",
     description: "Premium SaaS landing page.",
+    descriptionMarkdown: "Premium SaaS landing page.",
+    tags: ["SaaS", "Landing Page", "React", "Tailwind"],
     longDescription: "A beautiful and convertible landing page for your SaaS product.",
     features: ["Fully Responsive", "Dark Mode Ready"],
     thumbnails: [],
@@ -112,6 +120,8 @@ export const seedProjects: Project[] = [
     sales: 2140,
     image: "/images/ethereal_portfolio.png",
     description: "Minimalist icon set.",
+    descriptionMarkdown: "Minimalist icon set.",
+    tags: ["Icons", "SVG", "Design"],
     longDescription: "Over 1000 minimalist icons for modern UI design.",
     features: ["SVG Format", "Vector Shapes"],
     thumbnails: [],
@@ -131,6 +141,8 @@ export const seedProjects: Project[] = [
     sales: 654,
     image: "/images/collab_flow.png",
     description: "Modern monospaced font.",
+    descriptionMarkdown: "Modern monospaced font.",
+    tags: ["Font", "Mono", "Typography"],
     longDescription: "A beautiful monospaced font family for coding and design.",
     features: ["Multiple Weights", "Ligatures"],
     thumbnails: [],
@@ -150,6 +162,8 @@ export const seedProjects: Project[] = [
     sales: 1080,
     image: "/images/avenue_fashion.png",
     description: "Mobile App UI Kit.",
+    descriptionMarkdown: "Mobile App UI Kit.",
+    tags: ["Mobile", "UI Kit", "Figma", "Adobe XD"],
     longDescription: "Complete UI kit for cryptocurrency wallet mobile apps.",
     features: ["50+ Screens", "Light & Dark Mode"],
     thumbnails: [],
